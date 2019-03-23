@@ -7,19 +7,11 @@ import com.bank.application.model.User;
 import java.util.Scanner;
 import java.util.Set;
 
-public class UserLogin {
-    private static Set<User> users;
+public class UserLogin
+{
+    public boolean run() throws IncorrectLineException {
+        Set<User> users = new DataFile().getDataFromFile();
 
-    static {
-        try {
-            users = new DataFile().getDataFromFile();
-        } catch (IncorrectLineException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static boolean run()
-    {
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
@@ -32,7 +24,7 @@ public class UserLogin {
         return false;
     }
 
-    private static String getNextField(String field)
+    private String getNextField(String field)
     {
         Scanner keyboard = new Scanner(System.in);
         System.out.print("Insert " + field + ": ");
