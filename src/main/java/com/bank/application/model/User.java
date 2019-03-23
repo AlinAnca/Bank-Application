@@ -1,3 +1,5 @@
+package com.bank.application.model;
+
 public class User {
     private String username;
     private String password;
