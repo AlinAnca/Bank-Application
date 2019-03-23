@@ -1,19 +1,20 @@
 package com.bank.application.controller;
 
+import com.bank.application.repository.IncorrectLineException;
 import com.bank.application.service.UserLogin;
 
 import java.util.*;
 
 public class UserController {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws IncorrectLineException {
         int option = 0;
         while(option != 3)
         {
             if(option != 1) { option = getOption("1 - Login"); }
             else {
-                boolean login = UserLogin.run();
+                UserLogin obj = new UserLogin();
+                boolean login = obj.run();
                 if(login)
                 {
                     do {
