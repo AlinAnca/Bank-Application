@@ -10,15 +10,11 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class DataFile {
+    private final static String fileName = "file/data.txt";
     private static Set<User> users = new HashSet<>();
-    private final String fileName = "file/data.txt";
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public Set<User> readFile() throws IncorrectLineException {
-        ClassLoader classLoader = getClass().getClassLoader();
+    public static Set<User> getUsers() throws IncorrectLineException {
+        ClassLoader classLoader = DataFile.class.getClassLoader();
         File file = new File(classLoader.getResource(fileName).getFile());
 
         try (Scanner scan = new Scanner(file)) {
@@ -39,5 +35,9 @@ public class DataFile {
             e.printStackTrace();
         }
         return users;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 }
