@@ -2,23 +2,23 @@ package com.bank.application.repository;
 
 import com.bank.application.exceptions.IncorrectLineException;
 import com.bank.application.model.User;
+import com.bank.application.service.UserLogin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Logger;
 
-public class DataFile {
-    private final static String fileName = "file/data.txt";
-    private static Set<User> users = new HashSet<>();
+public class UserFileReader {
+    private final static String fileName = "file/users.txt";
+    private final static Logger logger = Logger.getLogger(UserLogin.class.getName());
 
-    public static Set<User> getUsers() throws IncorrectLineException {
-        ClassLoader classLoader = DataFile.class.getClassLoader();
+    public static List<User> readFile() throws IncorrectLineException {
+        ClassLoader classLoader = UserFileReader.class.getClassLoader();
         File file = new File(classLoader.getResource(fileName).getFile());
 
+        List<User> users = new ArrayList<>();
         try (Scanner scan = new Scanner(file)) {
-            //skipping headers
             scan.nextLine();
 
             while (scan.hasNextLine()) {
@@ -32,7 +32,7 @@ public class DataFile {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.finest(e.getMessage());
         }
         return users;
     }

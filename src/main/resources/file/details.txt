@@ -1,0 +1,4 @@
+account_number user_name balance account_type
+RO28BRDE450SV21000004500 loredna 0 RON
+RO26BTRLRONCRT0V05678801 anamaria 0 EUR
+RO08INGB0001008214508930 razv 0 RON
