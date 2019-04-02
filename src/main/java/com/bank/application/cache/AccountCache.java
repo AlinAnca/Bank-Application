@@ -1,7 +1,7 @@
 package com.bank.application.cache;
 
 import com.bank.application.model.Account;
-import com.bank.application.repository.AccountFileReader;
+import com.bank.application.repository.AccountCollection;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public class AccountCache {
 
     public static List<Account> getAccountsFromFile() {
         if (accountList == null) {
-            accountList = AccountFileReader.readAccountFile();
+            accountList = AccountCollection.getAccounts();
         }
         return accountList;
     }

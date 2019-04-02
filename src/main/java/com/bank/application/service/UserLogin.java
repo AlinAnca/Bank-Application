@@ -1,7 +1,6 @@
 package com.bank.application.service;
 
 import com.bank.application.cache.UserCache;
-import com.bank.application.exceptions.IncorrectLineException;
 import com.bank.application.model.User;
 
 import java.util.InputMismatchException;
@@ -35,25 +34,22 @@ public class UserLogin {
                     } while (option != 2 && option != 3);
 
                 } else {
-                    logger.info("Wrong username or password! \nPlease try again..\n");
+                    logger.warning("Wrong username or password! \nPlease try again..\n");
                 }
             }
         }
+        System.out.println("Application is closed. Thank you for your time!");
     }
 
     private User login() {
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
-        try {
-            for (User user : UserCache.getUsers()) {
-                if (inpUser.equals(user.getUsername()) && inpPass.equals(user.getPassword())) {
-                    logger.info("Welcome " + user.getUsername() + "!\n");
-                    return user;
-                }
+        for (User user : UserCache.getUsers()) {
+            if (inpUser.equals(user.getUsername()) && inpPass.equals(user.getPassword())) {
+                System.out.println("\nWelcome " + user.getUsername() + "!\n");
+                return user;
             }
-        } catch (IncorrectLineException ile) {
-            logger.warning(ile.getMessage());
         }
         return null;
     }
@@ -61,7 +57,9 @@ public class UserLogin {
     private int getOption(String optionMessage) {
         int option = 0;
         Scanner keyboard = new Scanner(System.in);
-        logger.info("\nPlease choose an option:\n" + optionMessage + "\n" + exitOption);
+        System.out.println("Please choose an option: ");
+        System.out.println(optionMessage);
+        System.out.println(exitOption);
 
         try {
             option = keyboard.nextInt();
@@ -73,7 +71,7 @@ public class UserLogin {
 
     private String getNextField(String field) {
         Scanner keyboard = new Scanner(System.in);
-        logger.info("Insert " + field + ": ");
+        System.out.print("Insert " + field + ": ");
         return keyboard.next();
     }
 

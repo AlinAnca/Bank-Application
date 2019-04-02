@@ -2,12 +2,9 @@ package com.bank.application.service;
 
 import com.bank.application.cache.AccountCache;
 import com.bank.application.model.Account;
+import com.bank.application.util.AccountFileWriter;
 import com.bank.application.util.AccountValidation;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -21,7 +18,10 @@ public class AccountMenu {
 
     public void displayAccountMenu(String username) {
         Scanner keyboard = new Scanner(System.in);
-        logger.info("\n" + createAccountOption + "\n" + displayAccountsOption + "\n" + backOption);
+        System.out.println("Your options: ");
+        System.out.println(createAccountOption);
+        System.out.println(displayAccountsOption);
+        System.out.println(backOption);
         try {
             int option = keyboard.nextInt();
             switch (option) {
@@ -33,7 +33,7 @@ public class AccountMenu {
                     break;
                 case 1:
                     createAccount(username);
-                    logger.info("Successfully created account!");
+                    logger.info("Successfully created account!\n");
                     displayAccountMenu(username);
                     break;
                 default:
@@ -48,19 +48,7 @@ public class AccountMenu {
     public void createAccount(String username) {
         Account account = AccountValidation.getAccount(username);
         AccountCache.addAccount(account);
-
-        ClassLoader classLoader = AccountMenu.class.getClassLoader();
-        File file = new File(classLoader.getResource(fileName).getFile());
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
-            writer.newLine();
-            writer.write(account.getAccountNumber() + " ");
-            writer.write(username + " ");
-            writer.write(account.getBalance() + " ");
-            writer.write(account.getAccountType() + " ");
-        } catch (IOException e) {
-            logger.finest(e.getMessage());
-        }
+        AccountFileWriter.writeAccountToFile(account,fileName);
     }
 
     public void inspectAccount(String username) {

@@ -1,17 +1,16 @@
 package com.bank.application.cache;
 
-import com.bank.application.exceptions.IncorrectLineException;
 import com.bank.application.model.User;
-import com.bank.application.repository.UserFileReader;
+import com.bank.application.repository.UserCollection;
 
 import java.util.List;
 
 public class UserCache {
     private static List<User> users;
 
-    public static List<User> getUsers() throws IncorrectLineException {
+    public static List<User> getUsers(){
         if (users == null) {
-            users = UserFileReader.readFile();
+            users = UserCollection.getUsers();
         }
         return users;
     }
