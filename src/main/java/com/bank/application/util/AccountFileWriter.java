@@ -2,7 +2,6 @@ package com.bank.application.util;
 
 import com.bank.application.model.Account;
 import com.bank.application.service.AccountMenu;
-import com.bank.application.service.UserLogin;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,7 +12,7 @@ import java.util.logging.Logger;
 public class AccountFileWriter {
     private final static Logger logger = Logger.getLogger(AccountFileWriter.class.getName());
 
-    public static void writeAccountToFile(Account account, String fileName){
+    public static void writeAccountToFile(Account account, String fileName) {
         ClassLoader classLoader = AccountMenu.class.getClassLoader();
         File file = new File(classLoader.getResource(fileName).getFile());
 

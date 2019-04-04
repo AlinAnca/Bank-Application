@@ -1,6 +1,6 @@
 package com.bank.application.model;
 
-import com.bank.application.util.AccountType;
+import com.bank.application.util.Currency;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -9,9 +9,9 @@ public class Account {
     private String accountNumber;
     private String username;
     private BigDecimal balance;
-    private AccountType accountType;
+    private Currency accountType;
 
-    public Account(String accountNumber, String username, BigDecimal balance, AccountType accountType) {
+    public Account(String accountNumber, String username, BigDecimal balance, Currency accountType) {
         this.accountNumber = accountNumber;
         this.username = username;
         this.balance = balance;
@@ -42,11 +42,11 @@ public class Account {
         this.balance = balance;
     }
 
-    public AccountType getAccountType() {
+    public Currency getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(AccountType accountType) {
+    public void setAccountType(Currency accountType) {
         this.accountType = accountType;
     }
 

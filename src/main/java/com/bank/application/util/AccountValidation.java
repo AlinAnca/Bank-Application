@@ -31,7 +31,7 @@ public class AccountValidation {
             accountType = accountType.toUpperCase().trim();
         } while (!checkAccountType(accountType));
 
-        return new Account(accountNumber, username, new BigDecimal(amount), AccountType.valueOf(accountType));
+        return new Account(accountNumber, username, new BigDecimal(amount), Currency.valueOf(accountType));
     }
 
     private static boolean checkAccountType(String accountType) {

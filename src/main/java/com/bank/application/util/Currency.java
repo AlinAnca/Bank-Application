@@ -1,5 +1,5 @@
 package com.bank.application.util;
 
-public enum AccountType {
+public enum Currency {
     RON, EUR
 }
