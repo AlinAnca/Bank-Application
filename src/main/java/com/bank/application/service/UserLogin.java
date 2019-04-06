@@ -2,7 +2,6 @@ package com.bank.application.service;
 
 import com.bank.application.cache.UserCache;
 import com.bank.application.model.User;
-import com.bank.application.util.PaymentValidation;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -12,32 +11,27 @@ public class UserLogin {
     private final static Logger logger = Logger.getLogger(UserLogin.class.getName());
     private final String loginOption = "1 - Login";
     private final String accountOption = "1 - Account";
-    private final String paymentOption = "2 - Make a transfer";
-    private final String logoutOption = "3 - Logout";
-    private final String exitOption = "4 - Exit";
+    private final String logoutOption = "2 - Logout";
+    private final String exitOption = "3 - Exit";
 
     public void run() {
         int option = 0;
-        while (option != 4) {
+        while (option != 3) {
             if (option != 1) {
                 option = getOption(loginOption);
             } else {
                 User user = login();
                 if (user != null) {
                     do {
-                        option = getOption(accountOption + "\n" + paymentOption + "\n" + logoutOption);
+                        option = getOption(accountOption + "\n" + logoutOption);
                         if (option == 1) {
                             AccountMenu accountMenu = new AccountMenu();
                             accountMenu.displayAccountMenu(user.getUsername());
                         }
                         if (option == 2) {
-                            PaymentValidation.doTransfer(user.getUsername());
-                            System.out.print("\n");
-                        }
-                        if (option == 3) {
                             logger.info("Successfully logout.\n");
                         }
-                    } while (option != 3 && option != 4);
+                    } while (option != 2 && option != 3);
 
                 } else {
                     logger.warning("Wrong username or password! \nPlease try again..\n");

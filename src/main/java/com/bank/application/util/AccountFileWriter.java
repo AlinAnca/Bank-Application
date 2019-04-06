@@ -21,7 +21,7 @@ public class AccountFileWriter {
             writer.write(account.getAccountNumber() + " ");
             writer.write(account.getUsername() + " ");
             writer.write(account.getBalance() + " ");
-            writer.write(account.getAccountType() + " ");
+            writer.write(account.getCurrency() + " ");
         } catch (IOException e) {
             logger.finest(e.getMessage());
         }

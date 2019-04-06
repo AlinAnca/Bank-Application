@@ -4,6 +4,7 @@ import com.bank.application.cache.AccountCache;
 import com.bank.application.model.Account;
 
 import java.math.BigDecimal;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
@@ -12,7 +13,7 @@ public class AccountValidation {
 
     public static Account getAccount(String username) {
         String accountNumber;
-        String amount;
+        double amount;
         String accountType;
         Scanner keyboard = new Scanner(System.in);
         do {
@@ -22,7 +23,7 @@ public class AccountValidation {
 
         do {
             System.out.print("Insert Amount: ");
-            amount = keyboard.next();
+            amount = getAmount();
         } while (!checkAmount(amount));
 
         do {
@@ -34,6 +35,18 @@ public class AccountValidation {
         return new Account(accountNumber, username, new BigDecimal(amount), Currency.valueOf(accountType));
     }
 
+    private static double getAmount() {
+        Scanner keyboard = new Scanner(System.in);
+        double amount = -1;
+        System.out.print("Insert Amount: ");
+        try {
+            amount = keyboard.nextDouble();
+        } catch (InputMismatchException e) {
+            logger.finer(e.getMessage());
+        }
+        return amount;
+    }
+
     private static boolean checkAccountType(String accountType) {
         String type = accountType.toUpperCase().trim();
         if (type.equals("RON") || type.equals("EUR")) {
@@ -43,9 +56,8 @@ public class AccountValidation {
         return false;
     }
 
-    private static boolean checkAmount(String amountField) {
-        BigDecimal amount = new BigDecimal(amountField);
-        if (amount.doubleValue() < 0) {
+    private static boolean checkAmount(double amount) {
+        if (amount < 0) {
             logger.warning("Invalid amount.");
             return false;
         }

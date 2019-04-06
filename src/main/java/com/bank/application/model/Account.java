@@ -9,13 +9,13 @@ public class Account {
     private String accountNumber;
     private String username;
     private BigDecimal balance;
-    private Currency accountType;
+    private Currency currency;
 
-    public Account(String accountNumber, String username, BigDecimal balance, Currency accountType) {
+    public Account(String accountNumber, String username, BigDecimal balance, Currency currency) {
         this.accountNumber = accountNumber;
         this.username = username;
         this.balance = balance;
-        this.accountType = accountType;
+        this.currency = currency;
     }
 
     public String getAccountNumber() {
@@ -42,12 +42,12 @@ public class Account {
         this.balance = balance;
     }
 
-    public Currency getAccountType() {
-        return accountType;
+    public Currency getCurrency() {
+        return currency;
     }
 
-    public void setAccountType(Currency accountType) {
-        this.accountType = accountType;
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
     }
 
     @Override
@@ -57,12 +57,12 @@ public class Account {
         Account account = (Account) o;
         return Objects.equals(accountNumber, account.accountNumber) &&
                 Objects.equals(username, account.username) &&
-                accountType == account.accountType;
+                currency == account.currency;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(accountNumber, username, balance, accountType);
+        return Objects.hash(accountNumber, username, balance, currency);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class Account {
                 "accountNumber='" + accountNumber + '\'' +
                 ", username='" + username + '\'' +
                 ", balance=" + balance +
-                ", accountType=" + accountType +
+                ", accountType=" + currency +
                 '}';
     }
 }
