@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class PaymentValidation {
     private final static Logger logger = Logger.getLogger(AccountValidation.class.getName());
 
-    public static void doTransfer(String username) {
+    public static void transferMoney(String username) {
         Scanner keyboard = new Scanner(System.in);
         String accountFrom;
         double amount;
@@ -116,18 +116,18 @@ public class PaymentValidation {
         return false;
     }
 
+    private static Map<Currency, Long> getNumbersOfAccountsByCurrency(String username) {
+        return DataCollection.getAccountsForEachUser().get(username)
+                .stream()
+                .collect(Collectors.groupingBy(a -> a.getCurrency(), Collectors.counting()));
+    }
+
     private static boolean checkAccountUniqueness(String username) {
         if (DataCollection.getAccountsForEachUser().get(username).size() == 1) {
             logger.warning("You are not able to make a transfer. Only one account founded!");
             return true;
         }
         return false;
-    }
-
-    private static Map<Currency, Long> getNumbersOfAccountsByCurrency(String username) {
-        return DataCollection.getAccountsForEachUser().get(username)
-                .stream()
-                .collect(Collectors.groupingBy(a -> a.getCurrency(), Collectors.counting()));
     }
 
     private static boolean checkAccountExistence(String username, String accountNumber) {

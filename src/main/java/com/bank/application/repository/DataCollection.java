@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DataCollection {
+
     public static Map<String, List<Account>> getAccountsForEachUser() {
         Map<String, List<Account>> mapOfAccounts = new HashMap<>();
 

@@ -22,7 +22,6 @@ public class AccountValidation {
         } while (!checkAccountNumber(accountNumber));
 
         do {
-            System.out.print("Insert Amount: ");
             amount = getAmount();
         } while (!checkAmount(amount));
 
@@ -47,6 +46,14 @@ public class AccountValidation {
         return amount;
     }
 
+    private static boolean checkAmount(double amount) {
+        if (amount < 0) {
+            logger.warning("Invalid amount.");
+            return false;
+        }
+        return true;
+    }
+
     private static boolean checkAccountType(String accountType) {
         String type = accountType.toUpperCase().trim();
         if (type.equals("RON") || type.equals("EUR")) {
@@ -54,14 +61,6 @@ public class AccountValidation {
         }
         logger.warning("Invalid type.");
         return false;
-    }
-
-    private static boolean checkAmount(double amount) {
-        if (amount < 0) {
-            logger.warning("Invalid amount.");
-            return false;
-        }
-        return true;
     }
 
     private static boolean checkAccountNumber(String accountNumber) {
