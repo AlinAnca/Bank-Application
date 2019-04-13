@@ -1,7 +1,8 @@
-package com.bank.application.util;
+package com.bank.application.validation;
 
-import com.bank.application.cache.AccountCache;
 import com.bank.application.model.Account;
+import com.bank.application.repository.AccountCollection;
+import com.bank.application.util.Currency;
 
 import java.math.BigDecimal;
 import java.util.InputMismatchException;
@@ -64,18 +65,22 @@ public class AccountValidation {
     }
 
     private static boolean checkAccountNumber(String accountNumber) {
-        for (Account account : AccountCache.getAccountsFromFile()) {
-            if (account.getAccountNumber().equals(accountNumber)) {
-                logger.warning("Account number already exists!\nPlease try again.. ");
-                return false;
-            }
-        }
         if (!accountNumber.toUpperCase().startsWith("RO")) {
             logger.warning("Invalid account number: " + accountNumber + ". It should start with 'RO'");
             return false;
         } else if (accountNumber.length() != 24) {
             logger.warning("Invalid account number: " + accountNumber + ". Account number length should be 24.");
             return false;
+        }
+        return checkAccountNumberUniqueness(accountNumber);
+    }
+
+    private static boolean checkAccountNumberUniqueness(String accountNumber) {
+        for (Account account : AccountCollection.getAccounts()) {
+            if (account.getAccountNumber().equals(accountNumber)) {
+                logger.warning("Account number already exists!\nPlease try again.. ");
+                return false;
+            }
         }
         return true;
     }

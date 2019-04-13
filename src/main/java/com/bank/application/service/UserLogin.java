@@ -1,8 +1,8 @@
 package com.bank.application.service;
 
-import com.bank.application.cache.UserCache;
 import com.bank.application.model.User;
-import com.bank.application.util.PaymentValidation;
+import com.bank.application.repository.UserCollection;
+import com.bank.application.validation.PaymentValidation;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -50,7 +50,7 @@ public class UserLogin {
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
-        for (User user : UserCache.getUsers()) {
+        for (User user : UserCollection.getUsers()) {
             if (inpUser.equals(user.getUsername()) && inpPass.equals(user.getPassword())) {
                 System.out.println("\nWelcome " + user.getUsername() + "!\n");
                 return user;
