@@ -1,43 +1,38 @@
 package com.bank.application.validation;
 
 import com.bank.application.model.Account;
-import com.bank.application.repository.AccountCollection;
-import com.bank.application.repository.DataCollection;
 import com.bank.application.util.Currency;
 
 import java.math.BigDecimal;
-import java.util.InputMismatchException;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PaymentValidation {
     private final static Logger logger = Logger.getLogger(AccountValidation.class.getName());
 
-    public static void transferMoney(String username) {
+    public static void transferMoney(List<Account> accountList) {
         Scanner keyboard = new Scanner(System.in);
         String accountFrom;
         double amount;
         String accountTo;
 
-        if (!checkAccountUniquenessForEachCurrency(username)) {
+        if (!checkAccountUniquenessForEachCurrency(accountList)) {
             do {
                 System.out.print("Insert Account from which you want to make a transfer: ");
                 accountFrom = keyboard.next();
-            } while (!checkAccountExistence(username, accountFrom) || !checkAccountFrom(username, accountFrom));
+            } while (!checkAccountExistence(accountList, accountFrom) || !checkAccountFrom(accountList, accountFrom));
 
             do {
                 amount = getAmount();
-            } while (!checkAmount(amount, accountFrom));
+            } while (!checkAmount(accountList, amount, accountFrom));
 
             do {
                 System.out.print("Insert Account to which you want to send the money: ");
                 accountTo = keyboard.next();
-            } while (!checkAccountExistence(username, accountTo) || !checkAccountTo(accountFrom, accountTo));
+            } while (!checkAccountExistence(accountList, accountTo) || !checkAccountTo(accountList, accountFrom, accountTo));
 
-            depositAmount(accountFrom, amount, accountTo);
+            depositAmount(accountList, accountFrom, amount, accountTo);
         }
     }
 
@@ -53,8 +48,8 @@ public class PaymentValidation {
         return amount;
     }
 
-    private static void depositAmount(String accountFrom, double amount, String accountTo) {
-        for (Account account : AccountCollection.getAccounts()) {
+    private static void depositAmount(List<Account> accountList, String accountFrom, double amount, String accountTo) {
+        for (Account account : accountList) {
             if (account.getAccountNumber().equals(accountFrom)) {
                 BigDecimal newBalance = account.getBalance().subtract(new BigDecimal(amount));
                 account.setBalance(newBalance);
@@ -67,8 +62,8 @@ public class PaymentValidation {
         logger.info("Transfer has been processed successfully.");
     }
 
-    private static boolean checkAccountTo(String accountFrom, String accountTo) {
-        if (!getAccountType(accountFrom).equals(getAccountType(accountTo))) {
+    private static boolean checkAccountTo(List<Account> accountList, String accountFrom, String accountTo) {
+        if (!getAccountType(accountList, accountFrom).equals(getAccountType(accountList, accountTo))) {
             logger.warning("Different account types! \nPlease try again..");
             return false;
         }
@@ -79,16 +74,16 @@ public class PaymentValidation {
         return true;
     }
 
-    private static boolean checkAccountFrom(String username, String accountFrom) {
-        for (Account account : AccountCollection.getAccounts()) {
+    private static boolean checkAccountFrom(List<Account> accountList, String accountFrom) {
+        for (Account account : accountList) {
             if (account.getAccountNumber().equals(accountFrom) && account.getBalance().equals(new BigDecimal(0))) {
                 logger.warning("You don't have enough money in your account. \nPlease try again..");
                 return false;
             }
         }
-        Map<Currency, Long> currencyMap = getNumbersOfAccountsByCurrency(username);
+        Map<Currency, Long> currencyMap = getNumbersOfAccountsByCurrency(accountList);
         for (Map.Entry<Currency, Long> entry : currencyMap.entrySet()) {
-            if (entry.getKey().equals(getAccountType(accountFrom).get()) && entry.getValue() == 1) {
+            if (entry.getKey().equals(getAccountType(accountList, accountFrom).get()) && entry.getValue() == 1) {
                 logger.warning("You have only one account of type " + entry.getKey() + "! Please try again..");
                 return false;
             }
@@ -96,8 +91,8 @@ public class PaymentValidation {
         return true;
     }
 
-    private static Optional<Currency> getAccountType(String account) {
-        for (Account a : AccountCollection.getAccounts()) {
+    private static Optional<Currency> getAccountType(List<Account> accountList, String account) {
+        for (Account a : accountList) {
             if (a.getAccountNumber().equals(account)) {
                 return Optional.of(a.getCurrency());
             }
@@ -105,12 +100,12 @@ public class PaymentValidation {
         return Optional.empty();
     }
 
-    private static boolean checkAccountUniquenessForEachCurrency(String username) {
-        if (checkAccountUniqueness(username)) {
+    private static boolean checkAccountUniquenessForEachCurrency(List<Account> accountList) {
+        if (checkAccountUniqueness(accountList)) {
             return true;
         }
-        if (!checkAccountUniqueness(username)) {
-            Map<Currency, Long> currencyMap = getNumbersOfAccountsByCurrency(username);
+        if (!checkAccountUniqueness(accountList)) {
+            Map<Currency, Long> currencyMap = getNumbersOfAccountsByCurrency(accountList);
             if (currencyMap.get(Currency.EUR) == 1 && currencyMap.get(Currency.RON) == 1) {
                 logger.warning("You are not able to make a transfer. You have only one account for each type, EUR and RON!");
                 return true;
@@ -119,22 +114,21 @@ public class PaymentValidation {
         return false;
     }
 
-    private static Map<Currency, Long> getNumbersOfAccountsByCurrency(String username) {
-        return DataCollection.getAccountsForEachUser().get(username)
-                .stream()
+    private static Map<Currency, Long> getNumbersOfAccountsByCurrency(List<Account> accountList) {
+        return accountList.stream()
                 .collect(Collectors.groupingBy(a -> a.getCurrency(), Collectors.counting()));
     }
 
-    private static boolean checkAccountUniqueness(String username) {
-        if (DataCollection.getAccountsForEachUser().get(username).size() == 1) {
+    private static boolean checkAccountUniqueness(List<Account> accountList) {
+        if (accountList.size() == 1) {
             logger.warning("You are not able to make a transfer. Only one account founded!");
             return true;
         }
         return false;
     }
 
-    private static boolean checkAccountExistence(String username, String accountNumber) {
-        for (Account account : DataCollection.getAccountsForEachUser().get(username)) {
+    private static boolean checkAccountExistence(List<Account> accountList, String accountNumber) {
+        for (Account account : accountList) {
             if (account.getAccountNumber().equals(accountNumber)) {
                 return true;
             }
@@ -143,8 +137,8 @@ public class PaymentValidation {
         return false;
     }
 
-    private static boolean checkAmount(double amount, String accountFrom) {
-        double amountAv = getAvailableAmount(accountFrom).doubleValue();
+    private static boolean checkAmount(List<Account> accountList, double amount, String accountFrom) {
+        double amountAv = getAvailableAmount(accountList, accountFrom).doubleValue();
         if (amount <= 0 || amount > amountAv) {
             logger.warning("Invalid amount.");
             return false;
@@ -152,9 +146,9 @@ public class PaymentValidation {
         return true;
     }
 
-    private static BigDecimal getAvailableAmount(String accountFrom) {
+    private static BigDecimal getAvailableAmount(List<Account> accountList, String accountFrom) {
         BigDecimal availableAmount = null;
-        for (Account account : AccountCollection.getAccounts()) {
+        for (Account account : accountList) {
             if (account.getAccountNumber().equals(accountFrom)) {
                 availableAmount = account.getBalance();
             }

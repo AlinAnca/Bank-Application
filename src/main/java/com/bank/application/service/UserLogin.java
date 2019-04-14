@@ -1,10 +1,13 @@
 package com.bank.application.service;
 
+import com.bank.application.model.Account;
 import com.bank.application.model.User;
+import com.bank.application.repository.DataCollection;
 import com.bank.application.repository.UserCollection;
 import com.bank.application.validation.PaymentValidation;
 
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
@@ -24,14 +27,15 @@ public class UserLogin {
                 option = getOption(loginOption);
             } else {
                 User user = login();
+                List<Account> accountListForLoggedUser = DataCollection.getAccountsForEachUser().get(user);
                 if (user != null) {
                     do {
                         option = getOption(accountOption + "\n" + paymentOption + "\n" + logoutOption);
                         if (option == 1) {
-                            AccountMenu.displayAccountMenu(user.getUsername());
+                            AccountMenu.displayAccountMenu(user.getUsername(), accountListForLoggedUser);
                         }
                         if (option == 2) {
-                            PaymentValidation.transferMoney(user.getUsername());
+                            PaymentValidation.transferMoney(accountListForLoggedUser);
                             System.out.print("\n");
                         }
                         if (option == 3) {

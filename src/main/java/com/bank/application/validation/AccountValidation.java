@@ -77,7 +77,7 @@ public class AccountValidation {
 
     private static boolean checkAccountNumberUniqueness(String accountNumber) {
         for (Account account : AccountCollection.getAccounts()) {
-            if (account.getAccountNumber().equals(accountNumber)) {
+            if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {
                 logger.warning("Account number already exists!\nPlease try again.. ");
                 return false;
             }

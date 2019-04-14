@@ -1,6 +1,7 @@
 package com.bank.application.repository;
 
 import com.bank.application.model.Account;
+import com.bank.application.model.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,11 +10,16 @@ import java.util.Map;
 
 public class DataCollection {
 
-    public static Map<String, List<Account>> getAccountsForEachUser() {
-        Map<String, List<Account>> mapOfAccounts = new HashMap<>();
+    public static Map<User, List<Account>> getAccountsForEachUser() {
+        Map<User, List<Account>> mapOfAccounts = new HashMap<>();
+
         for (Account account : AccountCollection.getAccounts()) {
-            List<Account> accounts = mapOfAccounts.computeIfAbsent(account.getUsername(), k -> new ArrayList<>());
-            accounts.add(account);
+            for(User user: UserCollection.getUsers()) {
+                if (account.getUsername().equals(user.getUsername())) {
+                    List<Account> accounts = mapOfAccounts.computeIfAbsent(user, k -> new ArrayList<>());
+                    accounts.add(account);
+                }
+            }
         }
         return mapOfAccounts;
     }
