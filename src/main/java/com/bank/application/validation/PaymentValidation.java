@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PaymentValidation {
-    private final static Logger logger = Logger.getLogger(AccountValidation.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AccountValidation.class.getName());
 
     public static void transferMoney(List<Account> accountList) {
         Scanner keyboard = new Scanner(System.in);
@@ -43,7 +43,7 @@ public class PaymentValidation {
         try {
             amount = keyboard.nextDouble();
         } catch (InputMismatchException e) {
-            logger.fine(e.getMessage());
+            LOGGER.fine(e.getMessage());
         }
         return amount;
     }
@@ -59,16 +59,16 @@ public class PaymentValidation {
                 account.setBalance(newBalance);
             }
         }
-        logger.info("Transfer has been processed successfully.");
+        LOGGER.info("Transfer has been processed successfully.");
     }
 
     private static boolean checkAccountTo(List<Account> accountList, String accountFrom, String accountTo) {
         if (!getAccountType(accountList, accountFrom).equals(getAccountType(accountList, accountTo))) {
-            logger.warning("Different account types! \nPlease try again..");
+            LOGGER.warning("Different account types! \nPlease try again..");
             return false;
         }
         if (accountFrom.equals(accountTo)) {
-            logger.warning("This is the transfer account. \nPlease try again..");
+            LOGGER.warning("This is the transfer account. \nPlease try again..");
             return false;
         }
         return true;
@@ -77,14 +77,14 @@ public class PaymentValidation {
     private static boolean checkAccountFrom(List<Account> accountList, String accountFrom) {
         for (Account account : accountList) {
             if (account.getAccountNumber().equals(accountFrom) && account.getBalance().equals(new BigDecimal(0))) {
-                logger.warning("You don't have enough money in your account. \nPlease try again..");
+                LOGGER.warning("You don't have enough money in your account. \nPlease try again..");
                 return false;
             }
         }
         Map<Currency, Long> currencyMap = getNumbersOfAccountsByCurrency(accountList);
         for (Map.Entry<Currency, Long> entry : currencyMap.entrySet()) {
             if (entry.getKey().equals(getAccountType(accountList, accountFrom).get()) && entry.getValue() == 1) {
-                logger.warning("You have only one account of type " + entry.getKey() + "! Please try again..");
+                LOGGER.warning("You have only one account of type " + entry.getKey() + "! Please try again..");
                 return false;
             }
         }
@@ -107,7 +107,7 @@ public class PaymentValidation {
         if (!checkAccountUniqueness(accountList)) {
             Map<Currency, Long> currencyMap = getNumbersOfAccountsByCurrency(accountList);
             if (currencyMap.get(Currency.EUR) == 1 && currencyMap.get(Currency.RON) == 1) {
-                logger.warning("You are not able to make a transfer. You have only one account for each type, EUR and RON!");
+                LOGGER.warning("You are not able to make a transfer. You have only one account for each type, EUR and RON!");
                 return true;
             }
         }
@@ -121,7 +121,7 @@ public class PaymentValidation {
 
     private static boolean checkAccountUniqueness(List<Account> accountList) {
         if (accountList.size() == 1) {
-            logger.warning("You are not able to make a transfer. Only one account founded!");
+            LOGGER.warning("You are not able to make a transfer. Only one account founded!");
             return true;
         }
         return false;
@@ -133,14 +133,14 @@ public class PaymentValidation {
                 return true;
             }
         }
-        logger.warning("Account does not exist! \nPlease try again..");
+        LOGGER.warning("Account does not exist! \nPlease try again..");
         return false;
     }
 
     private static boolean checkAmount(List<Account> accountList, double amount, String accountFrom) {
         double amountAv = getAvailableAmount(accountList, accountFrom).doubleValue();
         if (amount <= 0 || amount > amountAv) {
-            logger.warning("Invalid amount.");
+            LOGGER.warning("Invalid amount.");
             return false;
         }
         return true;

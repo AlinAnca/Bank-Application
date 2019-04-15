@@ -10,7 +10,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class AccountValidation {
-    private final static Logger logger = Logger.getLogger(AccountValidation.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AccountValidation.class.getName());
 
     public static Account getAccount(String username) {
         String accountNumber;
@@ -42,14 +42,14 @@ public class AccountValidation {
         try {
             amount = keyboard.nextDouble();
         } catch (InputMismatchException e) {
-            logger.finer(e.getMessage());
+            LOGGER.finer(e.getMessage());
         }
         return amount;
     }
 
     private static boolean checkAmount(double amount) {
         if (amount < 0) {
-            logger.warning("Invalid amount.");
+            LOGGER.warning("Invalid amount.");
             return false;
         }
         return true;
@@ -60,16 +60,16 @@ public class AccountValidation {
         if (type.equals("RON") || type.equals("EUR")) {
             return true;
         }
-        logger.warning("Invalid type.");
+        LOGGER.warning("Invalid type.");
         return false;
     }
 
     private static boolean checkAccountNumber(String accountNumber) {
         if (!accountNumber.toUpperCase().startsWith("RO")) {
-            logger.warning("Invalid account number: " + accountNumber + ". It should start with 'RO'");
+            LOGGER.warning("Invalid account number: " + accountNumber + ". It should start with 'RO'");
             return false;
         } else if (accountNumber.length() != 24) {
-            logger.warning("Invalid account number: " + accountNumber + ". Account number length should be 24.");
+            LOGGER.warning("Invalid account number: " + accountNumber + ". Account number length should be 24.");
             return false;
         }
         return checkAccountNumberUniqueness(accountNumber);
@@ -78,7 +78,7 @@ public class AccountValidation {
     private static boolean checkAccountNumberUniqueness(String accountNumber) {
         for (Account account : AccountCollection.getAccounts()) {
             if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {
-                logger.warning("Account number already exists!\nPlease try again.. ");
+                LOGGER.warning("Account number already exists!\nPlease try again.. ");
                 return false;
             }
         }

@@ -12,25 +12,25 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class UserLogin {
-    private final static Logger logger = Logger.getLogger(UserLogin.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UserLogin.class.getName());
 
-    private final String loginOption = "1 - Login";
-    private final String accountOption = "1 - Account";
-    private final String paymentOption = "2 - Make a transfer";
-    private final String logoutOption = "3 - Logout";
-    private final String exitOption = "4 - Exit";
+    private static final String LOGIN_OPTION = "1 - Login";
+    private static final String ACCOUNT_OPTION = "1 - Account";
+    private static final String PAY_OPTION = "2 - Make a transfer";
+    private static final String LOGOUT_OPTION = "3 - Logout";
+    private static final String EXIT_OPTION = "4 - Exit";
 
     public void run() {
         int option = 0;
         while (option != 4) {
             if (option != 1) {
-                option = getOption(loginOption);
+                option = getOption(LOGIN_OPTION);
             } else {
                 User user = login();
                 List<Account> accountListForLoggedUser = DataCollection.getAccountsForEachUser().get(user);
                 if (user != null) {
                     do {
-                        option = getOption(accountOption + "\n" + paymentOption + "\n" + logoutOption);
+                        option = getOption(ACCOUNT_OPTION + "\n" + PAY_OPTION + "\n" + LOGOUT_OPTION);
                         if (option == 1) {
                             AccountMenu.displayAccountMenu(user.getUsername(), accountListForLoggedUser);
                         }
@@ -39,11 +39,11 @@ public class UserLogin {
                             System.out.print("\n");
                         }
                         if (option == 3) {
-                            logger.info("Successfully logout.\n");
+                            LOGGER.info("Successfully logout.\n");
                         }
                     } while (option != 3 && option != 4);
                 } else {
-                    logger.warning("Wrong username or password! \nPlease try again..\n");
+                    LOGGER.warning("Wrong username or password! \nPlease try again..\n");
                 }
             }
         }
@@ -68,12 +68,12 @@ public class UserLogin {
         Scanner keyboard = new Scanner(System.in);
         System.out.println("Please choose an option: ");
         System.out.println(optionMessage);
-        System.out.println(exitOption);
+        System.out.println(EXIT_OPTION);
 
         try {
             option = keyboard.nextInt();
         } catch (InputMismatchException e) {
-            logger.warning("Invalid option. Please try again..\n");
+            LOGGER.warning("Invalid option. Please try again..\n");
         }
         return option;
     }

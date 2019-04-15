@@ -10,21 +10,21 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class AccountMenu {
-    private final static Logger logger = Logger.getLogger(UserLogin.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UserLogin.class.getName());
 
-    private final static String fileName = "file/details.txt";
+    private static final String FILE_NAME = "file/details.txt";
 
-    private static final String createAccountOption = "1 - Create Account";
-    private static final String displayAccountsOption = "2 - Display Accounts";
-    private static final String backOption = "3 - Back";
+    private static final String CREATE_OPTION = "1 - Create Account";
+    private static final String DISP_OPTION = "2 - Display Accounts";
+    private static final String BACK_OPTION = "3 - Back";
 
     static void displayAccountMenu(String username, List<Account> accountList) {
         int option;
         do {
             option = getOptions();
             if (option == 1) {
-                createAccount(username,accountList);
-                logger.info("Successfully created account!\n");
+                createAccount(username, accountList);
+                LOGGER.info("Successfully created account!\n");
             }
             if (option == 2) {
                 inspectAccount(accountList);
@@ -36,14 +36,14 @@ public class AccountMenu {
         int option = 0;
         Scanner keyboard = new Scanner(System.in);
         System.out.println("Your options: ");
-        System.out.println(createAccountOption);
-        System.out.println(displayAccountsOption);
-        System.out.println(backOption);
+        System.out.println(CREATE_OPTION);
+        System.out.println(DISP_OPTION);
+        System.out.println(BACK_OPTION);
 
         try {
             option = keyboard.nextInt();
         } catch (InputMismatchException e) {
-            logger.warning("Invalid option! Please try again..\n");
+            LOGGER.warning("Invalid option! Please try again..\n");
         }
         return option;
     }
@@ -51,12 +51,12 @@ public class AccountMenu {
     private static void createAccount(String username, List<Account> accountList) {
         Account account = AccountValidation.getAccount(username);
         accountList.add(account);
-        AccountFileWriter.writeAccountToFile(account, fileName);
+        AccountFileWriter.writeAccountToFile(account, FILE_NAME);
     }
 
     private static void inspectAccount(List<Account> accountList) {
         for (Account account : accountList) {
-            logger.info("\nUsername: " + account.getUsername() + "\nAccount: " + account.getAccountNumber() +
+            LOGGER.info("\nUsername: " + account.getUsername() + "\nAccount: " + account.getAccountNumber() +
                     "\nBalance: " + account.getBalance() + "\nCurrency: " + account.getCurrency() + "\n");
         }
     }

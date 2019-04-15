@@ -11,7 +11,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class FileReader {
-    private final static Logger logger = Logger.getLogger(FileReader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FileReader.class.getName());
 
     public static List<String> readFile(String fileName, int lengthOfWords) throws IncorrectLineException {
         ClassLoader classLoader = AccountCollection.class.getClassLoader();
@@ -31,7 +31,7 @@ public class FileReader {
                 }
             }
         } catch (IOException e) {
-            logger.finest(e.getMessage());
+            LOGGER.finest(e.getMessage());
         }
         return list;
     }

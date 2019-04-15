@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 public class AccountFileWriter {
-    private final static Logger logger = Logger.getLogger(AccountFileWriter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AccountFileWriter.class.getName());
 
     public static void writeAccountToFile(Account account, String fileName) {
         ClassLoader classLoader = AccountMenu.class.getClassLoader();
@@ -23,7 +23,7 @@ public class AccountFileWriter {
             writer.write(account.getBalance() + " ");
             writer.write(account.getCurrency() + " ");
         } catch (IOException e) {
-            logger.finest(e.getMessage());
+            LOGGER.finest(e.getMessage());
         }
     }
 }
