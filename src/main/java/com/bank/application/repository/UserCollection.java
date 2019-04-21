@@ -8,11 +8,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * UserCollection is the class which converts the data from
+ * file {@link file/users.txt} into a collection of users.
+ */
 public class UserCollection {
 
     private static final Logger LOGGER = Logger.getLogger(UserCollection.class.getName());
     private static final String FILE_NAME = "file/users.txt";
 
+    /**
+     * Gets data from file and adds it into a collection of users.
+     * Catches invalid data and sends warnings.
+     * @return the collection of available users
+     */
     public static List<User> getUsers() {
         List<User> userList = new ArrayList<>();
         try {

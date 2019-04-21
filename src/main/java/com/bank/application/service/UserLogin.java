@@ -8,9 +8,18 @@ import com.bank.application.validation.PaymentValidation;
 
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+/**
+ * UserLogin is the base class which allows any valid user
+ * from {@link file/users.txt} to login.
+ * Once logged, user have the possibility to navigate through {@link AccountMenu},
+ * to make a transfer {@link PaymentValidation}, logout or exit the application.
+ *
+ * @author Loredana Surugiu
+ */
 public class UserLogin {
     private static final Logger LOGGER = Logger.getLogger(UserLogin.class.getName());
 
@@ -20,19 +29,22 @@ public class UserLogin {
     private static final String LOGOUT_OPTION = "3 - Logout";
     private static final String EXIT_OPTION = "4 - Exit";
 
+    /**
+     * Startup method of Login
+     */
     public void run() {
         int option = 0;
         while (option != 4) {
             if (option != 1) {
                 option = getOption(LOGIN_OPTION);
             } else {
-                User user = login();
-                List<Account> accountListForLoggedUser = DataCollection.getAccountsForEachUser().get(user);
-                if (user != null) {
+                Optional<User> user = login();
+                List<Account> accountListForLoggedUser = DataCollection.getAccountsForEachUser().get(user.get());
+                if (user.isPresent()) {
                     do {
                         option = getOption(ACCOUNT_OPTION + "\n" + PAY_OPTION + "\n" + LOGOUT_OPTION);
                         if (option == 1) {
-                            AccountMenu.displayAccountMenu(user.getUsername(), accountListForLoggedUser);
+                            AccountMenu.displayAccountMenu(user.get().getUsername(), accountListForLoggedUser);
                         }
                         if (option == 2) {
                             PaymentValidation.transferMoney(accountListForLoggedUser);
@@ -50,19 +62,42 @@ public class UserLogin {
         System.out.println("Application is closed. Thank you for your time!");
     }
 
-    private User login() {
+    /**
+     * Gets the username and password from application.
+     * Checks if input data is found in file {@link file/users.txt}
+     *
+     * @return <code>User</code> if found;
+     *         nothing otherwise.
+     */
+    private Optional<User> login() {
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
         for (User user : UserCollection.getUsers()) {
             if (inpUser.equals(user.getUsername()) && inpPass.equals(user.getPassword())) {
                 System.out.println("\nWelcome " + user.getUsername() + "!\n");
-                return user;
+                return Optional.of(user);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
+    /**
+     * Gets next input from system.
+     * @param field  the String to display.
+     * @return the next input
+     */
+    private String getNextField(String field) {
+        Scanner keyboard = new Scanner(System.in);
+        System.out.print("Insert " + field + ": ");
+        return keyboard.next();
+    }
+
+    /**
+     * Shows to the current user possible options.
+     * @param optionMessage  the message to display.
+     * @return the next option
+     */
     private int getOption(String optionMessage) {
         int option = 0;
         Scanner keyboard = new Scanner(System.in);
@@ -76,11 +111,5 @@ public class UserLogin {
             LOGGER.warning("Invalid option. Please try again..\n");
         }
         return option;
-    }
-
-    private String getNextField(String field) {
-        Scanner keyboard = new Scanner(System.in);
-        System.out.print("Insert " + field + ": ");
-        return keyboard.next();
     }
 }

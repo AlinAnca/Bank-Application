@@ -2,6 +2,14 @@ package com.bank.application.model;
 
 import java.util.Objects;
 
+/**
+ * User entity.
+ * Contains the necessary information through which the user can log in:
+ * <ul>
+ *     <li>an unique username</li>
+ *     <li>a password</li>
+ * </ul>
+ */
 public class User {
     private String username;
     private String password;

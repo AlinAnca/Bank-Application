@@ -9,9 +9,17 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+/**
+ * AccountValidation is the class which validates the information regarding the new account which user wants to create.
+ */
 public class AccountValidation {
     private static final Logger LOGGER = Logger.getLogger(AccountValidation.class.getName());
 
+    /**
+     * Reads data from user's application until it's valid.
+     * @param username  the username for logged User
+     * @return a new Account
+     */
     public static Account getAccount(String username) {
         String accountNumber;
         double amount;
@@ -35,6 +43,11 @@ public class AccountValidation {
         return new Account(accountNumber, username, new BigDecimal(amount), Currency.valueOf(accountType));
     }
 
+    /**
+     * Gets the amount from user.
+     * Only allows decimal numbers, otherwise catches {@link InputMismatchException}.
+     * @return the amount
+     */
     private static double getAmount() {
         Scanner keyboard = new Scanner(System.in);
         double amount = -1;
@@ -47,6 +60,12 @@ public class AccountValidation {
         return amount;
     }
 
+    /**
+     * Checks if given amount is valid.
+     * @param amount  the amount to be validated
+     * @return <code>true</code> if the amount is positive number;
+     *         <code>false</code> otherwise
+     */
     private static boolean checkAmount(double amount) {
         if (amount < 0) {
             LOGGER.warning("Invalid amount.");
@@ -55,6 +74,12 @@ public class AccountValidation {
         return true;
     }
 
+    /**
+     * Checks if account type is RON or EUR.
+     * @param accountType the account type to be validated
+     * @return <code>true</code> if the account type is valid;
+     *         <code>false</code> otherwise
+     */
     private static boolean checkAccountType(String accountType) {
         String type = accountType.toUpperCase().trim();
         if (type.equals("RON") || type.equals("EUR")) {
@@ -64,6 +89,12 @@ public class AccountValidation {
         return false;
     }
 
+    /**
+     * Checks if given account number starts with RO and has a valid length of 24 characters.
+     * @param accountNumber  the account number to be validated
+     * @return <code>true</code> if the account number is valid;
+     *         <code>false</code> otherwise
+     */
     private static boolean checkAccountNumber(String accountNumber) {
         if (!accountNumber.toUpperCase().startsWith("RO")) {
             LOGGER.warning("Invalid account number: " + accountNumber + ". It should start with 'RO'");
@@ -75,6 +106,12 @@ public class AccountValidation {
         return checkAccountNumberUniqueness(accountNumber);
     }
 
+    /**
+     * Checks if the account number is unique.
+     * @param accountNumber the account number to be validated
+     * @return <code>true</code> if the account is unique;
+     *         <code>false</code> otherwise
+     */
     private static boolean checkAccountNumberUniqueness(String accountNumber) {
         for (Account account : AccountCollection.getAccounts()) {
             if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {

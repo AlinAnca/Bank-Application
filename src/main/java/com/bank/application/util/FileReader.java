@@ -13,6 +13,16 @@ import java.util.logging.Logger;
 public class FileReader {
     private static final Logger LOGGER = Logger.getLogger(FileReader.class.getName());
 
+    /**
+     * Reads a file from resources and collect each valid line.
+     * A valid line should have a number of elements equal to
+     * a given length depending on the file.
+     *
+     * @param fileName        the name of the read file
+     * @param lengthOfWords   the length of elements which validates the line
+     * @return a collection of lines read from file
+     * @throws IncorrectLineException for invalid lines
+     */
     public static List<String> readFile(String fileName, int lengthOfWords) throws IncorrectLineException {
         ClassLoader classLoader = AccountCollection.class.getClassLoader();
         File file = new File(classLoader.getResource(fileName).getFile());

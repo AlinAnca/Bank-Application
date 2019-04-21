@@ -5,6 +5,16 @@ import com.bank.application.util.Currency;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * Account entity.
+ * Contains:
+ * <ul>
+ *     <li>account number</li>
+ *     <li>username</li>
+ *     <li>balance</li>
+ *     <li>currency of type {@link Currency}</li>
+ * </ul>
+ */
 public class Account {
     private String accountNumber;
     private String username;

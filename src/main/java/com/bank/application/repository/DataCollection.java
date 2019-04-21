@@ -10,6 +10,12 @@ import java.util.Map;
 
 public class DataCollection {
 
+    /**
+     * Gets accounts for each user from user and account collection.
+     * @return the map that keeps users and their available accounts
+     * @see UserCollection
+     * @see AccountCollection
+     */
     public static Map<User, List<Account>> getAccountsForEachUser() {
         Map<User, List<Account>> mapOfAccounts = new HashMap<>();
 
