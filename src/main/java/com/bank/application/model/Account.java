@@ -2,30 +2,73 @@ package com.bank.application.model;
 
 import com.bank.application.util.Currency;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * Account entity.
- * Contains:
- * <ul>
- *     <li>account number</li>
- *     <li>username</li>
- *     <li>balance</li>
- *     <li>currency of type {@link Currency}</li>
- * </ul>
- */
+@Entity
+@Table(name = "account")
 public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @ManyToOne
+    @JoinColumn
+    private User user;
+
+    @Column(name = "account_number", length = 24)
     private String accountNumber;
-    private String username;
+
+    @Column(name = "balance")
     private BigDecimal balance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_type", length = 5)
     private Currency currency;
 
-    public Account(String accountNumber, String username, BigDecimal balance, Currency currency) {
-        this.accountNumber = accountNumber;
-        this.username = username;
-        this.balance = balance;
-        this.currency = currency;
+    @Transient
+    @Column(name = "created_time", nullable = false, columnDefinition = "datetime default current_timestamp")
+    private LocalDateTime createdTime;
+
+    @Column(name = "updated_time", nullable = false, columnDefinition = "datetime default current_timestamp")
+    private LocalDateTime updatedTime;
+
+    @OneToMany(mappedBy = "account")
+    private List<Transaction> transactions;
+
+    private Account() {
+    }
+
+    public Account(Builder builder) {
+        this.user = builder.user;
+        this.accountNumber = builder.accountNumber;
+        this.balance = builder.balance;
+        this.currency = builder.currency;
+        this.updatedTime = builder.updatedTime;
+        this.transactions = builder.transactions;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getAccountNumber() {
@@ -34,14 +77,6 @@ public class Account {
 
     public void setAccountNumber(String accountNumber) {
         this.accountNumber = accountNumber;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public BigDecimal getBalance() {
@@ -60,28 +95,77 @@ public class Account {
         this.currency = currency;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Account account = (Account) o;
-        return Objects.equals(accountNumber, account.accountNumber) &&
-                Objects.equals(username, account.username) &&
-                currency == account.currency;
+    public LocalDateTime getCreatedTime() {
+        return createdTime;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(accountNumber, username, balance, currency);
+    public void setCreatedTime(LocalDateTime createdTime) {
+        this.createdTime = createdTime;
     }
 
-    @Override
-    public String toString() {
-        return "Account{" +
-                "accountNumber='" + accountNumber + '\'' +
-                ", username='" + username + '\'' +
-                ", balance=" + balance +
-                ", accountType=" + currency +
-                '}';
+    public LocalDateTime getUpdatedTime() {
+        return updatedTime;
+    }
+
+    public void setUpdatedTime(LocalDateTime updatedTime) {
+        this.updatedTime = updatedTime;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+
+    public static class Builder {
+
+        private User user;
+        private String accountNumber;
+        private BigDecimal balance;
+        private Currency currency;
+        private LocalDateTime createdTime;
+        private LocalDateTime updatedTime;
+        private List<Transaction> transactions;
+
+        public Builder withUser(User user) {
+            this.user = user;
+            return this;
+        }
+
+        public Builder withAccountNumber(String accountNumber) {
+            this.accountNumber = accountNumber;
+            return this;
+        }
+
+        public Builder withBalance(BigDecimal balance) {
+            this.balance = balance;
+            return this;
+        }
+
+        public Builder withCurrency(Currency currency) {
+            this.currency = currency;
+            return this;
+        }
+
+        public Builder withCreatedTime(LocalDateTime createdTime) {
+            this.createdTime = createdTime;
+            return this;
+        }
+
+        public Builder withUpdatedTime(LocalDateTime updatedTime) {
+            this.updatedTime = updatedTime;
+            return this;
+        }
+
+        public Builder wihTransactions(List<Transaction> transactions) {
+            this.transactions = transactions;
+            return this;
+        }
+
+        public Account build() {
+            return new Account(this);
+        }
     }
 }

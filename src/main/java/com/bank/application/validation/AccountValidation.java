@@ -1,26 +1,31 @@
 package com.bank.application.validation;
 
 import com.bank.application.model.Account;
-import com.bank.application.repository.AccountCollection;
+import com.bank.application.model.User;
+import com.bank.application.repository.AccountRepository;
 import com.bank.application.util.Currency;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
 /**
- * AccountValidation is the class which validates the information regarding the new account which user wants to create.
+ * AccountValidation is the class which validates the information regarding the account created by the user.
  */
 public class AccountValidation {
     private static final Logger LOGGER = Logger.getLogger(AccountValidation.class.getName());
 
     /**
      * Reads data from user's application until it's valid.
-     * @param username  the username for logged User
+     *
+     * @param user the logged User
      * @return a new Account
      */
-    public static Account getAccount(String username) {
+    public static Account getAccount(User user) {
         String accountNumber;
         double amount;
         String accountType;
@@ -40,12 +45,19 @@ public class AccountValidation {
             accountType = accountType.toUpperCase().trim();
         } while (!checkAccountType(accountType));
 
-        return new Account(accountNumber, username, new BigDecimal(amount), Currency.valueOf(accountType));
+        return Account.builder()
+                .withUser(user)
+                .withAccountNumber(accountNumber)
+                .withBalance(new BigDecimal(amount))
+                .withUpdatedTime(LocalDateTime.now())
+                .withCurrency(Currency.valueOf(accountType))
+                .build();
     }
 
     /**
      * Gets the amount from user.
      * Only allows decimal numbers, otherwise catches {@link InputMismatchException}.
+     *
      * @return the amount
      */
     private static double getAmount() {
@@ -62,9 +74,10 @@ public class AccountValidation {
 
     /**
      * Checks if given amount is valid.
-     * @param amount  the amount to be validated
+     *
+     * @param amount the amount to be validated
      * @return <code>true</code> if the amount is positive number;
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     private static boolean checkAmount(double amount) {
         if (amount < 0) {
@@ -76,9 +89,10 @@ public class AccountValidation {
 
     /**
      * Checks if account type is RON or EUR.
+     *
      * @param accountType the account type to be validated
      * @return <code>true</code> if the account type is valid;
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     private static boolean checkAccountType(String accountType) {
         String type = accountType.toUpperCase().trim();
@@ -91,9 +105,10 @@ public class AccountValidation {
 
     /**
      * Checks if given account number starts with RO and has a valid length of 24 characters.
-     * @param accountNumber  the account number to be validated
+     *
+     * @param accountNumber the account number to be validated
      * @return <code>true</code> if the account number is valid;
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     private static boolean checkAccountNumber(String accountNumber) {
         if (!accountNumber.toUpperCase().startsWith("RO")) {
@@ -108,15 +123,19 @@ public class AccountValidation {
 
     /**
      * Checks if the account number is unique.
+     *
      * @param accountNumber the account number to be validated
      * @return <code>true</code> if the account is unique;
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     private static boolean checkAccountNumberUniqueness(String accountNumber) {
-        for (Account account : AccountCollection.getAccounts()) {
-            if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {
-                LOGGER.warning("Account number already exists!\nPlease try again.. ");
-                return false;
+        Optional<List<Account>> accounts = AccountRepository.getAccounts();
+        if (accounts.isPresent()) {
+            for (Account account : accounts.get()) {
+                if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {
+                    LOGGER.warning("Account number already exists!\nPlease try again.. ");
+                    return false;
+                }
             }
         }
         return true;
