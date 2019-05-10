@@ -2,8 +2,8 @@ package com.bank.application.service;
 
 import com.bank.application.model.Account;
 import com.bank.application.model.User;
-import com.bank.application.repository.DataCollection;
-import com.bank.application.repository.UserCollection;
+import com.bank.application.repository.AccountRepository;
+import com.bank.application.repository.UserRepository;
 import com.bank.application.validation.PaymentValidation;
 
 import java.util.InputMismatchException;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 /**
  * UserLogin is the base class which allows any valid user
- * from {@link file/users.txt} to login.
+ * from repository to login.
  * Once logged, user have the possibility to navigate through {@link AccountMenu},
  * to make a transfer {@link PaymentValidation}, logout or exit the application.
  *
@@ -39,15 +39,16 @@ public class UserLogin {
                 option = getOption(LOGIN_OPTION);
             } else {
                 Optional<User> user = login();
-                List<Account> accountListForLoggedUser = DataCollection.getAccountsForEachUser().get(user.get());
                 if (user.isPresent()) {
                     do {
+                        List<Account> accountListForLoggedUser = AccountRepository.getAccountsFor(user.get());
+
                         option = getOption(ACCOUNT_OPTION + "\n" + PAY_OPTION + "\n" + LOGOUT_OPTION);
                         if (option == 1) {
-                            AccountMenu.displayAccountMenu(user.get().getUsername(), accountListForLoggedUser);
+                            AccountMenu.displayAccountMenu(user.get(), accountListForLoggedUser);
                         }
                         if (option == 2) {
-                            PaymentValidation.transferMoney(accountListForLoggedUser);
+                            PaymentValidation.transferMoney(user.get());
                             System.out.print("\n");
                         }
                         if (option == 3) {
@@ -64,16 +65,16 @@ public class UserLogin {
 
     /**
      * Gets the username and password from application.
-     * Checks if input data is found in file {@link file/users.txt}
+     * Checks if input data is found in repository
      *
      * @return <code>User</code> if found;
-     *         nothing otherwise.
+     * nothing otherwise.
      */
     private Optional<User> login() {
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
-        for (User user : UserCollection.getUsers()) {
+        for (User user : UserRepository.getUsers()) {
             if (inpUser.equals(user.getUsername()) && inpPass.equals(user.getPassword())) {
                 System.out.println("\nWelcome " + user.getUsername() + "!\n");
                 return Optional.of(user);
@@ -84,7 +85,8 @@ public class UserLogin {
 
     /**
      * Gets next input from system.
-     * @param field  the String to display.
+     *
+     * @param field the String to display.
      * @return the next input
      */
     private String getNextField(String field) {
@@ -95,7 +97,8 @@ public class UserLogin {
 
     /**
      * Shows to the current user possible options.
-     * @param optionMessage  the message to display.
+     *
+     * @param optionMessage the message to display.
      * @return the next option
      */
     private int getOption(String optionMessage) {
