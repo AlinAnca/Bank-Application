@@ -1,5 +1,7 @@
 package com.bank.application.model;
 
+import com.bank.application.util.Type;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,11 +14,11 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "to_account", length = 24)
-    private String toAccount;
+    @Column(name = "account", length = 24)
+    private String accountNumber;
 
-    @Column(name = "balance")
-    private BigDecimal balance;
+    @Column(name = "amount")
+    private BigDecimal amount;
 
     @Column(name = "details", length = 100, columnDefinition = "varchar(100) default '-'")
     private String details;
@@ -29,16 +31,21 @@ public class Transaction {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    public Transaction(Builder builder) {
-        this.toAccount = builder.toAccount;
-        this.balance = builder.balance;
-        this.details = builder.details;
-        this.createdTime = builder.createdTime;
-        this.account = builder.account;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", length = 10)
+    private Type type;
+
+    public Transaction(TransactionBuilder transactionBuilder) {
+        this.accountNumber = transactionBuilder.accountNumber;
+        this.amount = transactionBuilder.amount;
+        this.details = transactionBuilder.details;
+        this.createdTime = transactionBuilder.createdTime;
+        this.account = transactionBuilder.account;
+        this.type = transactionBuilder.type;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static TransactionBuilder builder() {
+        return new TransactionBuilder();
     }
 
     public long getId() {
@@ -49,20 +56,20 @@ public class Transaction {
         this.id = id;
     }
 
-    public String getToAccount() {
-        return toAccount;
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
-    public void setToAccount(String toAccount) {
-        this.toAccount = toAccount;
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
     }
 
     public String getDetails() {
@@ -89,36 +96,50 @@ public class Transaction {
         this.account = account;
     }
 
-    public static class Builder {
+    public Type getType() {
+        return type;
+    }
 
-        private String toAccount;
-        private BigDecimal balance;
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public static class TransactionBuilder {
+
+        private String accountNumber;
+        private BigDecimal amount;
         private String details;
         private LocalDateTime createdTime;
         private Account account;
+        private Type type;
 
-        public Builder toAccount(String toAccount) {
-            this.toAccount = toAccount;
+        public TransactionBuilder withAccountNumber(String accountNumber) {
+            this.accountNumber = accountNumber;
             return this;
         }
 
-        public Builder withBalance(BigDecimal balance) {
-            this.balance = balance;
+        public TransactionBuilder withAmount(BigDecimal amount) {
+            this.amount = amount;
             return this;
         }
 
-        public Builder withDetails(String details) {
+        public TransactionBuilder withDetails(String details) {
             this.details = details;
             return this;
         }
 
-        public Builder withCreatedTime(LocalDateTime createdTime) {
+        public TransactionBuilder withCreatedTime(LocalDateTime createdTime) {
             this.createdTime = createdTime;
             return this;
         }
 
-        public Builder fromAccount(Account account) {
+        public TransactionBuilder withAccount(Account account) {
             this.account = account;
+            return this;
+        }
+
+        public TransactionBuilder withType(Type type) {
+            this.type = type;
             return this;
         }
 

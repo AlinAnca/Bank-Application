@@ -27,7 +27,8 @@ public class User {
     @Column(name = "updated_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime updatedTime;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "person_id", referencedColumnName = "id")
     private Person person;
 
     @OneToMany(mappedBy = "user")
@@ -36,18 +37,19 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Account> accounts;
 
-    public User() {
+    private User() {}
+
+    public User(UserBuilder userBuilder) {
+        this.username = userBuilder.username;
+        this.password = userBuilder.password;
+        this.createdTime = userBuilder.createdTime;
+        this.updatedTime = userBuilder.updatedTime;
+        this.notifications = userBuilder.notifications;
+        this.person = userBuilder.person;
     }
 
-    public User(Builder builder) {
-        this.username = builder.username;
-        this.password = builder.password;
-        this.createdTime = builder.createdTime;
-        this.updatedTime = builder.updatedTime;
-    }
-
-    public static Builder builder() {
-        return new Builder();
+    public static UserBuilder builder() {
+        return new UserBuilder();
     }
 
     public long getId() {
@@ -134,44 +136,42 @@ public class User {
         return Objects.hash(id, username, password, createdTime, updatedTime, person, notifications, accounts);
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", createdTime=" + createdTime +
-                ", updatedTime=" + updatedTime +
-                ", person=" + person +
-                ", notifications=" + notifications +
-                ", accounts=" + accounts +
-                '}';
-    }
-
-    public static class Builder {
+    public static class UserBuilder {
 
         private String username;
         private String password;
         private LocalDateTime createdTime;
         private LocalDateTime updatedTime;
+        private List<Notification> notifications;
+        private Person person;
 
-        public Builder withUsername(String username) {
+        public UserBuilder withUsername(String username) {
             this.username = username;
             return this;
         }
 
-        public Builder withPassword(String password) {
+        public UserBuilder withPassword(String password) {
             this.password = password;
             return this;
         }
 
-        public Builder withCreatedTime(LocalDateTime createdTime) {
+        public UserBuilder withCreatedTime(LocalDateTime createdTime) {
             this.createdTime = createdTime;
             return this;
         }
 
-        public Builder withUpdatedTime(LocalDateTime updatedTime) {
+        public UserBuilder withUpdatedTime(LocalDateTime updatedTime) {
             this.updatedTime = updatedTime;
+            return this;
+        }
+
+        public UserBuilder withNotifications(List<Notification> notifications){
+            this.notifications = notifications;
+            return this;
+        }
+
+        public UserBuilder withPerson(Person person){
+            this.person = person;
             return this;
         }
 

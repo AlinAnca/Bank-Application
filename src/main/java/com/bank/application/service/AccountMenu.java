@@ -4,6 +4,7 @@ import com.bank.application.model.Account;
 import com.bank.application.model.User;
 import com.bank.application.repository.AccountRepository;
 import com.bank.application.validation.AccountValidation;
+import com.bank.application.view.UserView;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -24,19 +25,18 @@ public class AccountMenu {
     /**
      * Displays account options for creating and inspecting available accounts.
      *
-     * @param user        the current user
-     * @param accountList the account list of the current user
+     * @param userView  the current user
      */
-    static void displayAccountMenu(User user, List<Account> accountList) {
+    static void displayAccountMenu(UserView userView) {
         int option;
         do {
             option = getOptions();
             if (option == 1) {
-                createAccount(user, accountList);
+                createAccount(userView);
                 LOGGER.info("Successfully created account!\n");
             }
             if (option == 2) {
-                inspectAccount(accountList);
+                inspectAccount(userView);
             }
         } while (option != 3);
     }
@@ -66,22 +66,22 @@ public class AccountMenu {
      * Creates an account for user and update his account list.
      * Adds account to account repository.
      *
-     * @param user the current user
+     * @param userView the current user
      */
-    private static void createAccount(User user, List<Account> accountList) {
-        Account account = AccountValidation.getAccount(user);
-        accountList.add(account);
+    private static void createAccount(UserView userView) {
+        Account account = AccountValidation.getAccount(userView);
         AccountRepository.addAccount(account);
     }
 
     /**
      * Inspects current user accounts and print the details.
      *
-     * @param accountList the available accounts of user
+     * @param userView the current user
      */
-    private static void inspectAccount(List<Account> accountList) {
-        if (accountList.size() > 0) {
-            for (Account account : accountList) {
+    private static void inspectAccount(UserView userView) {
+        List<Account> accountListForLoggedUser = AccountRepository.getAccountsFor(userView);
+        if (accountListForLoggedUser.size() > 0) {
+            for (Account account : accountListForLoggedUser) {
                 LOGGER.info("\nUsername: " + account.getUser().getUsername() + "\nAccount: " + account.getAccountNumber() +
                         "\nBalance: " + account.getBalance() + "\nCurrency: " + account.getCurrency() + "\n");
             }

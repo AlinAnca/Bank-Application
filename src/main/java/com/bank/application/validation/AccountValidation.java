@@ -3,12 +3,13 @@ package com.bank.application.validation;
 import com.bank.application.model.Account;
 import com.bank.application.model.User;
 import com.bank.application.repository.AccountRepository;
+import com.bank.application.repository.UserRepository;
 import com.bank.application.util.Currency;
+import com.bank.application.view.UserView;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.InputMismatchException;
-import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -22,10 +23,10 @@ public class AccountValidation {
     /**
      * Reads data from user's application until it's valid.
      *
-     * @param user the logged User
+     * @param userView the logged User
      * @return a new Account
      */
-    public static Account getAccount(User user) {
+    public static Account getAccount(UserView userView) {
         String accountNumber;
         double amount;
         String accountType;
@@ -46,7 +47,7 @@ public class AccountValidation {
         } while (!checkAccountType(accountType));
 
         return Account.builder()
-                .withUser(user)
+                .withUser(UserRepository.getUserByUsername(userView.getUsername()))
                 .withAccountNumber(accountNumber)
                 .withBalance(new BigDecimal(amount))
                 .withUpdatedTime(LocalDateTime.now())
@@ -129,14 +130,10 @@ public class AccountValidation {
      * <code>false</code> otherwise
      */
     private static boolean checkAccountNumberUniqueness(String accountNumber) {
-        Optional<List<Account>> accounts = AccountRepository.getAccounts();
-        if (accounts.isPresent()) {
-            for (Account account : accounts.get()) {
-                if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {
-                    LOGGER.warning("Account number already exists!\nPlease try again.. ");
-                    return false;
-                }
-            }
+        Optional<Account> account = AccountRepository.getAccountByAccountNumber(accountNumber);
+        if (account.isPresent()) {
+            LOGGER.warning("Account number already exists!\nPlease try again.. ");
+            return false;
         }
         return true;
     }
