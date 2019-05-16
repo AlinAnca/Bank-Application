@@ -1,29 +1,19 @@
 package com.bank.application.service;
 
-import com.bank.application.exceptions.UsernameNotFoundException;
-import com.bank.application.model.Account;
 import com.bank.application.model.User;
-import com.bank.application.repository.AccountRepository;
 import com.bank.application.repository.UserRepository;
 import com.bank.application.validation.PaymentValidation;
-import com.bank.application.view.UserView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.InputMismatchException;
-import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.logging.Logger;
 
-/**
- * UserLogin is the base class which allows any valid user
- * from repository to login.
- * Once logged, user have the possibility to navigate through {@link AccountMenu},
- * to make a transfer {@link PaymentValidation}, logout or exit the application.
- *
- * @author Loredana Surugiu
- */
-public class UserLogin {
-    private static final Logger LOGGER = Logger.getLogger(UserLogin.class.getName());
+import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
+
+@Service
+public class UserService {
 
     private static final String LOGIN_OPTION = "1 - Login";
     private static final String ACCOUNT_OPTION = "1 - Account";
@@ -31,24 +21,28 @@ public class UserLogin {
     private static final String LOGOUT_OPTION = "3 - Logout";
     private static final String EXIT_OPTION = "4 - Exit";
 
-    /**
-     * Startup method of Login
-     */
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PaymentValidation paymentValidation;
+
     public void run() {
         int option = 0;
         while (option != 4) {
             if (option != 1) {
                 option = getOption(LOGIN_OPTION);
             } else {
-                Optional<UserView> userView = login();
-                if (userView.isPresent()) {
+                Optional<User> user = login();
+                if (user.isPresent()) {
                     do {
                         option = getOption(ACCOUNT_OPTION + "\n" + PAY_OPTION + "\n" + LOGOUT_OPTION);
                         if (option == 1) {
-                            AccountMenu.displayAccountMenu(userView.get());
+                            accountService.displayAccountMenu(user.get());
                         }
                         if (option == 2) {
-                            PaymentValidation.transferMoney(userView.get());
+                            paymentValidation.transferMoney(user.get());
                             System.out.print("\n");
                         }
                         if (option == 3) {
@@ -63,46 +57,26 @@ public class UserLogin {
         System.out.println("Application is closed. Thank you for your time!");
     }
 
-    /**
-     * Gets the username and password from application.
-     * Checks if input data is found in repository
-     *
-     * @return <code>User</code> if found;
-     * nothing otherwise.
-     */
-    private Optional<UserView> login(){
+    private Optional<User> login() {
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
-        User user = UserRepository.getUserByUsername(inpUser);
-        if(user != null) {
+        User user = userRepository.findByUsername(inpUser);
+        if (user != null) {
             if (inpPass.equals(user.getPassword())) {
-                UserView userView = new UserView(user.getId(),user.getUsername());
-                System.out.println("\nWelcome " + userView.getUsername() + "!\n");
-                return Optional.of(userView);
+                System.out.println("\nWelcome " + user.getUsername() + "!\n");
+                return Optional.of(user);
             }
         }
         return Optional.empty();
     }
 
-    /**
-     * Gets next input from system.
-     *
-     * @param field the String to display.
-     * @return the next input
-     */
     private String getNextField(String field) {
         Scanner keyboard = new Scanner(System.in);
         System.out.print("Insert " + field + ": ");
         return keyboard.next();
     }
 
-    /**
-     * Shows to the current user possible options.
-     *
-     * @param optionMessage the message to display.
-     * @return the next option
-     */
     private int getOption(String optionMessage) {
         int option = 0;
         Scanner keyboard = new Scanner(System.in);
