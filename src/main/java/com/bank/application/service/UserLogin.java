@@ -1,10 +1,12 @@
 package com.bank.application.service;
 
+import com.bank.application.exceptions.UsernameNotFoundException;
 import com.bank.application.model.Account;
 import com.bank.application.model.User;
 import com.bank.application.repository.AccountRepository;
 import com.bank.application.repository.UserRepository;
 import com.bank.application.validation.PaymentValidation;
+import com.bank.application.view.UserView;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -38,17 +40,15 @@ public class UserLogin {
             if (option != 1) {
                 option = getOption(LOGIN_OPTION);
             } else {
-                Optional<User> user = login();
-                if (user.isPresent()) {
+                Optional<UserView> userView = login();
+                if (userView.isPresent()) {
                     do {
-                        List<Account> accountListForLoggedUser = AccountRepository.getAccountsFor(user.get());
-
                         option = getOption(ACCOUNT_OPTION + "\n" + PAY_OPTION + "\n" + LOGOUT_OPTION);
                         if (option == 1) {
-                            AccountMenu.displayAccountMenu(user.get(), accountListForLoggedUser);
+                            AccountMenu.displayAccountMenu(userView.get());
                         }
                         if (option == 2) {
-                            PaymentValidation.transferMoney(user.get());
+                            PaymentValidation.transferMoney(userView.get());
                             System.out.print("\n");
                         }
                         if (option == 3) {
@@ -70,14 +70,16 @@ public class UserLogin {
      * @return <code>User</code> if found;
      * nothing otherwise.
      */
-    private Optional<User> login() {
+    private Optional<UserView> login(){
         String inpUser = getNextField("username");
         String inpPass = getNextField("password");
 
-        for (User user : UserRepository.getUsers()) {
-            if (inpUser.equals(user.getUsername()) && inpPass.equals(user.getPassword())) {
-                System.out.println("\nWelcome " + user.getUsername() + "!\n");
-                return Optional.of(user);
+        User user = UserRepository.getUserByUsername(inpUser);
+        if(user != null) {
+            if (inpPass.equals(user.getPassword())) {
+                UserView userView = new UserView(user.getId(),user.getUsername());
+                System.out.println("\nWelcome " + userView.getUsername() + "!\n");
+                return Optional.of(userView);
             }
         }
         return Optional.empty();

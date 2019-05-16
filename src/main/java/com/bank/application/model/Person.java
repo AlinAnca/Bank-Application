@@ -10,8 +10,10 @@ public class Person {
     private long id;
 
     @OneToOne
-    @PrimaryKeyJoinColumn
     private User user;
+
+    @Column(nullable = false, length = 58)
+    private String email;
 
     @Column(name = "address", length = 58)
     private String address;
@@ -22,9 +24,11 @@ public class Person {
     @Column(name = "last_name", nullable = false, length = 16)
     private String lastName;
 
+    private Person(){}
 
-    public Person(User user, String address, String firstName, String lastName) {
+    public Person(User user, String email, String address, String firstName, String lastName) {
         this.user = user;
+        this.email = email;
         this.address = address;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -36,6 +40,14 @@ public class Person {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getAddress() {
@@ -61,4 +73,5 @@ public class Person {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
 }

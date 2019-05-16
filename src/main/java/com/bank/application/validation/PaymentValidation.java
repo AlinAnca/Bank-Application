@@ -1,11 +1,15 @@
 package com.bank.application.validation;
 
 import com.bank.application.model.Account;
+import com.bank.application.model.Notification;
 import com.bank.application.model.Transaction;
-import com.bank.application.model.User;
 import com.bank.application.repository.AccountRepository;
+import com.bank.application.repository.NotificationRepository;
 import com.bank.application.repository.TransactionRepository;
+import com.bank.application.repository.UserRepository;
 import com.bank.application.util.Currency;
+import com.bank.application.util.Type;
+import com.bank.application.view.UserView;
 
 import java.math.BigDecimal;
 import java.util.InputMismatchException;
@@ -25,7 +29,7 @@ public class PaymentValidation {
      * Makes valid transfers between accounts of the same type of current user.
      * This is possible only if user has at least two accounts of same type.
      */
-    public static void transferMoney(User user) {
+    public static void transferMoney(UserView userView) {
         Scanner keyboard = new Scanner(System.in);
         String accountFrom;
         double amount;
@@ -36,29 +40,37 @@ public class PaymentValidation {
             do {
                 System.out.print("Insert Account from which you want to make a transfer: ");
                 accountFrom = keyboard.next();
-            } while (!checkAccountFromExistence(user, accountFrom) || !checkAccountFrom(user, accountFrom));
+            } while (!checkAccountExistence(accountFrom) || !checkAccountFrom(accountFrom));
 
             do {
                 amount = getAmount();
-            } while (!checkAmount(user, amount, accountFrom));
+            } while (!checkAmount(amount, accountFrom));
 
             do {
                 System.out.print("Insert Account to which you want to send the money: ");
                 accountTo = keyboard.next();
-            } while (!checkAccountToExistence(accountTo) || !checkAccountTo(accountFrom, accountTo));
+            } while (!checkAccountExistence(accountTo) || !checkAccountTo(accountFrom, accountTo));
 
             System.out.print("Description: ");
             details = new Scanner(System.in).nextLine();
 
-            Account account = depositAmount(accountFrom, amount, accountTo);
-            Transaction transaction = Transaction.builder()
-                    .toAccount(accountTo)
-                    .withBalance(new BigDecimal(amount))
-                    .fromAccount(account)
-                    .withDetails(details)
-                    .build();
-            TransactionRepository.addTransaction(transaction);
+            depositAmount(accountFrom, amount, accountTo, details);
+            createNotification(userView, details);
         }
+    }
+
+    /**
+     * Creates a notification into Database
+     *
+     * @param userView the current user
+     * @param details  the description
+     */
+    private static void createNotification(UserView userView, String details) {
+        NotificationRepository.addNotification(Notification.builder()
+                .withUser(UserRepository.getUserByUsername(userView.getUsername()))
+                .withDetails(details)
+                .build()
+        );
     }
 
     /**
@@ -67,23 +79,46 @@ public class PaymentValidation {
      * @param accountNumberFrom the account from which is made the transfer
      * @param amount            the amount to transfer
      * @param accountNumberTo   the account to which is made the transfer
+     * @param details           the description of transaction
      */
-    private static Account depositAmount(String accountNumberFrom, double amount, String accountNumberTo) {
-        Account fromAccount = null;
-        for (Account account : AccountRepository.getAccounts().get()) {
-            if (account.getAccountNumber().equals(accountNumberFrom)) {
-                fromAccount = account;
+    private static void depositAmount(String accountNumberFrom, double amount, String accountNumberTo, String details) {
+        Optional<Account> fromAccount = AccountRepository.getAccountByAccountNumber(accountNumberFrom);
+        Optional<Account> toAccount = AccountRepository.getAccountByAccountNumber(accountNumberTo);
 
-                BigDecimal newBalance = account.getBalance().subtract(new BigDecimal(amount));
-                AccountRepository.updateAccountBalance(account.getId(), newBalance);
-            }
-            if (account.getAccountNumber().equals(accountNumberTo)) {
-                BigDecimal newBalance = account.getBalance().add(new BigDecimal(amount));
-                AccountRepository.updateAccountBalance(account.getId(), newBalance);
-            }
+        if (fromAccount.isPresent()) {
+            BigDecimal newBalance = fromAccount.get().getBalance().subtract(new BigDecimal(amount));
+            AccountRepository.updateAccountBalance(fromAccount.get().getId(), newBalance);
+            createTransaction(accountNumberTo, amount, fromAccount.get(), details, Type.INCOMING);
+        }
+        if (toAccount.isPresent()) {
+            BigDecimal newBalance = toAccount.get().getBalance().add(new BigDecimal(amount));
+            AccountRepository.updateAccountBalance(toAccount.get().getId(), newBalance);
+            createTransaction(accountNumberFrom, amount, toAccount.get(), details, Type.OUTGOING);
         }
         LOGGER.info("Transfer has been processed successfully.");
-        return fromAccount;
+    }
+
+    /**
+     * Inserts an incoming or outgoing transaction into Database
+     *
+     * @param accountNumber the account number
+     * @param amount        the amount to transfer
+     * @param account       the account to/from which is made the transfer
+     * @param details       the description of transaction
+     * @param type          the type of transaction
+     */
+    private static void createTransaction(String accountNumber, double amount, Account account, String details, Type type) {
+        if (account != null) {
+            TransactionRepository.addTransaction(
+                    Transaction.builder()
+                            .withAccountNumber(accountNumber)
+                            .withAmount(new BigDecimal(amount))
+                            .withAccount(account)
+                            .withDetails(details)
+                            .withType(type)
+                            .build()
+            );
+        }
     }
 
     /**
@@ -107,14 +142,13 @@ public class PaymentValidation {
     /**
      * Checks if the amount to be transferred is valid.
      *
-     * @param user        the current user;
      * @param amount      the amount to check;
      * @param accountFrom the account from which is made the transfer
      * @return <code>true</code> if the amount is valid;
      * <code>false</code> otherwise
      */
-    private static boolean checkAmount(User user, double amount, String accountFrom) {
-        double amountAv = getAvailableAmount(user, accountFrom).doubleValue();
+    private static boolean checkAmount(double amount, String accountFrom) {
+        double amountAv = getAvailableAmount(accountFrom).doubleValue();
         if (amount <= 0 || amount > amountAv) {
             LOGGER.warning("Invalid amount.");
             return false;
@@ -125,16 +159,14 @@ public class PaymentValidation {
     /**
      * Gets available amount of the account from which the transfer is made.
      *
-     * @param user        the current user
      * @param accountFrom the account number from which is made the transfer
      * @return the available amount from account
      */
-    private static BigDecimal getAvailableAmount(User user, String accountFrom) {
+    private static BigDecimal getAvailableAmount(String accountFrom) {
         BigDecimal availableAmount = null;
-        for (Account account : AccountRepository.getAccountsFor(user)) {
-            if (account.getAccountNumber().equals(accountFrom)) {
-                availableAmount = account.getBalance();
-            }
+        Optional<Account> account = AccountRepository.getAccountByAccountNumber(accountFrom);
+        if (account.isPresent()) {
+            availableAmount = account.get().getBalance();
         }
         return availableAmount;
     }
@@ -166,18 +198,18 @@ public class PaymentValidation {
      * The account must not be empty, so the transfer is valid.
      * User should have at least two accounts of the same type as inserted account.
      *
-     * @param user        the current user
      * @param accountFrom the account form which is made the transfer
      * @return <code>true</code> if the account is valid;
      * <code>false</code> otherwise
      */
-    private static boolean checkAccountFrom(User user, String accountFrom) {
-        for (Account account : AccountRepository.getAccountsFor(user)) {
-            if (account.getAccountNumber().equals(accountFrom) && account.getBalance().equals(new BigDecimal(0))) {
-                LOGGER.warning("You don't have enough money in your account. \nPlease try again..");
-                return false;
-            }
+    private static boolean checkAccountFrom(String accountFrom) {
+        Optional<Account> account = AccountRepository.getAccountByAccountNumber(accountFrom);
+
+        if (account.isPresent() && account.get().getBalance().equals(new BigDecimal(0))) {
+            LOGGER.warning("You don't have enough money in your account. \nPlease try again..");
+            return false;
         }
+
         Map<Currency, Long> currencyMap = getNumberOfAccountsByCurrency();
         for (Map.Entry<Currency, Long> entry : currencyMap.entrySet()) {
             if (entry.getKey().equals(getAccountType(accountFrom).get()) && entry.getValue() == 1) {
@@ -196,10 +228,9 @@ public class PaymentValidation {
      * nothing otherwise.
      */
     private static Optional<Currency> getAccountType(String account) {
-        for (Account a : AccountRepository.getAccounts().get()) {
-            if (a.getAccountNumber().equals(account)) {
-                return Optional.of(a.getCurrency());
-            }
+        Optional<Account> accountOptional = AccountRepository.getAccountByAccountNumber(account);
+        if (accountOptional.isPresent()) {
+            return Optional.of(accountOptional.get().getCurrency());
         }
         return Optional.empty();
     }
@@ -251,27 +282,15 @@ public class PaymentValidation {
     /**
      * Checks the existence of the account.
      *
-     * @param accountFrom the account form which is made the transfer
+     * @param account the account checked
      * @return <code>true</code> if the account exists;
      * <code>false</code> otherwise
      */
-    private static boolean checkAccountFromExistence(User user, String accountFrom) {
-        for (Account account : AccountRepository.getAccountsFor(user)) {
-            if (account.getAccountNumber().equals(accountFrom)) {
-                return true;
-            }
+    private static boolean checkAccountExistence(String account) {
+        if (AccountRepository.getAccountByAccountNumber(account).isPresent()) {
+            return true;
         }
-        LOGGER.warning("Account not found. \nPlease try again and make sure you've inserted one of your accounts..");
-        return false;
-    }
-
-    private static boolean checkAccountToExistence(String accountTo) {
-        for (Account account : AccountRepository.getAccounts().get()) {
-            if (account.getAccountNumber().equals(accountTo)) {
-                return true;
-            }
-        }
-        LOGGER.warning("Account does not exist! \nPlease try again..");
+        LOGGER.warning("Account not found. \nPlease try again..");
         return false;
     }
 }
