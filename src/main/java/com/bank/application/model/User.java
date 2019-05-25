@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-
 @Entity
 @Table(name = "user")
 public class User {
@@ -19,37 +18,31 @@ public class User {
     @Column(nullable = false, length = 32)
     private String password;
 
-    @Transient
     @Column(name = "created_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime createdTime;
 
-    @Transient
     @Column(name = "updated_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime updatedTime;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "person_id", referencedColumnName = "id")
-    private Person person;
-
-    @OneToMany(mappedBy = "user")
-    private List<Notification> notifications;
-
-    @OneToMany(mappedBy = "user")
-    private List<Account> accounts;
-
-    private User() {}
+    private User() {
+    }
 
     public User(UserBuilder userBuilder) {
         this.username = userBuilder.username;
         this.password = userBuilder.password;
         this.createdTime = userBuilder.createdTime;
-        this.updatedTime = userBuilder.updatedTime;
-        this.notifications = userBuilder.notifications;
-        this.person = userBuilder.person;
     }
 
     public static UserBuilder builder() {
         return new UserBuilder();
+    }
+
+    @PrePersist
+    void preInsert() {
+        if (this.createdTime == null)
+            this.createdTime = LocalDateTime.now();
+        if (this.updatedTime == null)
+            this.updatedTime = LocalDateTime.now();
     }
 
     public long getId() {
@@ -92,30 +85,6 @@ public class User {
         this.updatedTime = updatedTime;
     }
 
-    public Person getPerson() {
-        return person;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
-    }
-
-    public List<Notification> getNotifications() {
-        return notifications;
-    }
-
-    public void setNotifications(List<Notification> notifications) {
-        this.notifications = notifications;
-    }
-
-    public List<Account> getAccounts() {
-        return accounts;
-    }
-
-    public void setAccounts(List<Account> accounts) {
-        this.accounts = accounts;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -125,15 +94,12 @@ public class User {
                 Objects.equals(username, user.username) &&
                 Objects.equals(password, user.password) &&
                 Objects.equals(createdTime, user.createdTime) &&
-                Objects.equals(updatedTime, user.updatedTime) &&
-                Objects.equals(person, user.person) &&
-                Objects.equals(notifications, user.notifications) &&
-                Objects.equals(accounts, user.accounts);
+                Objects.equals(updatedTime, user.updatedTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, password, createdTime, updatedTime, person, notifications, accounts);
+        return Objects.hash(id, username, password, createdTime, updatedTime);
     }
 
     public static class UserBuilder {
@@ -143,7 +109,7 @@ public class User {
         private LocalDateTime createdTime;
         private LocalDateTime updatedTime;
         private List<Notification> notifications;
-        private Person person;
+        private List<Account> accounts;
 
         public UserBuilder withUsername(String username) {
             this.username = username;
@@ -162,16 +128,6 @@ public class User {
 
         public UserBuilder withUpdatedTime(LocalDateTime updatedTime) {
             this.updatedTime = updatedTime;
-            return this;
-        }
-
-        public UserBuilder withNotifications(List<Notification> notifications){
-            this.notifications = notifications;
-            return this;
-        }
-
-        public UserBuilder withPerson(Person person){
-            this.person = person;
             return this;
         }
 

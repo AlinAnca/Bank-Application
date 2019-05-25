@@ -18,11 +18,9 @@ public class Notification {
     @Column(length = 58)
     private String details;
 
-    @Transient
     @Column(name = "created_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime createdTime;
 
-    @Transient
     @Column(name = "sent_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime sentTime;
 
@@ -35,6 +33,14 @@ public class Notification {
 
     public static NotificationBuilder builder() {
         return new NotificationBuilder();
+    }
+
+    @PrePersist
+    void preInsert() {
+        if (this.createdTime == null)
+            this.createdTime = LocalDateTime.now();
+        if (this.sentTime == null)
+            this.sentTime = LocalDateTime.now();
     }
 
     public long getId() {

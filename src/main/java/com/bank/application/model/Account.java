@@ -5,7 +5,6 @@ import com.bank.application.util.Currency;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "account")
@@ -15,7 +14,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn
     private User user;
 
@@ -26,18 +25,14 @@ public class Account {
     private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "account_type", length = 5)
+    @Column(name = "account_type")
     private Currency currency;
 
-    @Transient
     @Column(name = "created_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime createdTime;
 
     @Column(name = "updated_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime updatedTime;
-
-    @OneToMany(mappedBy = "account")
-    private List<Transaction> transactions;
 
     private Account() {
     }
@@ -48,11 +43,18 @@ public class Account {
         this.balance = accountBuilder.balance;
         this.currency = accountBuilder.currency;
         this.updatedTime = accountBuilder.updatedTime;
-        this.transactions = accountBuilder.transactions;
     }
 
     public static AccountBuilder builder() {
         return new AccountBuilder();
+    }
+
+    @PrePersist
+    void preInsert() {
+        if (this.createdTime == null)
+            this.createdTime = LocalDateTime.now();
+        if (this.updatedTime == null)
+            this.updatedTime = LocalDateTime.now();
     }
 
     public long getId() {
@@ -111,14 +113,6 @@ public class Account {
         this.updatedTime = updatedTime;
     }
 
-    public List<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(List<Transaction> transactions) {
-        this.transactions = transactions;
-    }
-
     public static class AccountBuilder {
 
         private User user;
@@ -127,7 +121,6 @@ public class Account {
         private Currency currency;
         private LocalDateTime createdTime;
         private LocalDateTime updatedTime;
-        private List<Transaction> transactions;
 
         public AccountBuilder withUser(User user) {
             this.user = user;
@@ -156,11 +149,6 @@ public class Account {
 
         public AccountBuilder withUpdatedTime(LocalDateTime updatedTime) {
             this.updatedTime = updatedTime;
-            return this;
-        }
-
-        public AccountBuilder wihTransactions(List<Transaction> transactions) {
-            this.transactions = transactions;
             return this;
         }
 
