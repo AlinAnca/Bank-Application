@@ -13,7 +13,7 @@ public interface UserService {
 
     UserDTO deleteUser(String username);
 
-    UserDTO login(UserLoginDTO userLoginDTO) throws InvalidPasswodException, UsernameNotFoundException, UserAlreadyLoggedException;
+    UserDTO login(UserLoginDTO userLoginDTO) throws InvalidPasswodException, UserNotFoundException, UserAlreadyLoggedException;
 
     UserDTO logout(String token) throws SessionNotFoundException;
 }

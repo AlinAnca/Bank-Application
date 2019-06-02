@@ -3,6 +3,9 @@ package com.bank.application.model;
 import com.bank.application.util.Type;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -14,9 +17,12 @@ public class Transfer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotNull
+    @Size(min = 24, max = 24)
     @Column(name = "account", length = 24)
     private String accountNumber;
 
+    @Positive
     @Column(name = "amount")
     private BigDecimal amount;
 
@@ -25,9 +31,11 @@ public class Transfer {
 
     @Column(name = "created_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime createdTime;
+
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn
     private Account account;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", length = 10)
     private Type type;

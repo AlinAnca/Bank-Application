@@ -14,6 +14,12 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
+    @Query(value = "select COUNT(*) from account where account_type = 'RON'", nativeQuery = true)
+    Integer countAccountsByCurrencyRON();
+
+    @Query(value = "select COUNT(*) from account where account_type = 'EUR'", nativeQuery = true)
+    Integer countAccountsByCurrencyEUR();
+
     Account save(Account account);
 
     Optional<Account> findAccountByAccountNumber(String accountNumber);
@@ -25,6 +31,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findAllAccountsByToken(String token);
 
     @Modifying
-    @Query("update Account a set a.balance = ?1, a.updatedTime = current_date where a.accountNumber = ?2")
-    Integer updateAccountBalance(BigDecimal newBalance, String accountNumber);
+    @Query("update Account a set a.balance = a.balance - ?1, a.updatedTime = current_date where a.accountNumber = ?2")
+    Integer updateAccountFromBalance(BigDecimal amount, String accountNumber);
+
+    @Modifying
+    @Query("update Account a set a.balance = a.balance + ?1, a.updatedTime = current_timestamp where a.accountNumber = ?2")
+    Integer updateAccountToBalance(BigDecimal amount, String accountNumber);
 }

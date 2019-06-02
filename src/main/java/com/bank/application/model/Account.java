@@ -3,6 +3,10 @@ package com.bank.application.model;
 import com.bank.application.util.Currency;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -18,9 +22,13 @@ public class Account {
     @JoinColumn
     private User user;
 
+    @NotNull
+    @Size(min = 24, max = 24)
+    @Pattern(regexp = "^RO")
     @Column(name = "account_number", length = 24)
     private String accountNumber;
 
+    @PositiveOrZero
     @Column(name = "balance")
     private BigDecimal balance;
 

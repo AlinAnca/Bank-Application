@@ -21,16 +21,18 @@ import java.util.Optional;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
-    @Autowired
-    UserRepository userRepository;
 
-    @Autowired
-    AuthenticationRepository authenticationRepository;
-
-    @Autowired
-    UserConverter userConverter;
-
+    private UserRepository userRepository;
+    private AuthenticationRepository authenticationRepository;
+    private UserConverter userConverter;
     private Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository, AuthenticationRepository authenticationRepository, UserConverter userConverter) {
+        this.userRepository = userRepository;
+        this.authenticationRepository = authenticationRepository;
+        this.userConverter = userConverter;
+    }
 
     @Override
     public UserDTO save(User user) throws UsernameAlreadyExistsException {
@@ -52,7 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO login(UserLoginDTO userLoginDTO) throws InvalidPasswodException, UsernameNotFoundException, UserAlreadyLoggedException {
+    public UserDTO login(UserLoginDTO userLoginDTO) throws InvalidPasswodException, UserNotFoundException, UserAlreadyLoggedException {
         Optional<User> user = userRepository.findUserByUsername(userLoginDTO.getUsername());
         if (user.isPresent()) {
             if (!authenticationRepository.findAuthenticationByReference(user.get().getId()).isPresent()) {
@@ -74,19 +76,16 @@ public class UserServiceImpl implements UserService {
                     throw new InvalidPasswodException();
             } else
                 throw new UserAlreadyLoggedException("User '" + userLoginDTO.getUsername() + "' already logged!");
-        } else
-            throw new UsernameNotFoundException("Username '" + userLoginDTO.getUsername() + "' not found!");
-
+        }
+        throw new UserNotFoundException("Username '" + userLoginDTO.getUsername() + "' not found!");
     }
 
     @Override
     public UserDTO logout(String token) throws SessionNotFoundException {
         Optional<Authentication> authentication = authenticationRepository.findAuthenticationByToken(token);
         if (authentication.isPresent()) {
-            Integer noOfDeletedTokens = authenticationRepository.deleteAuthenticationByToken(token);
-            if (noOfDeletedTokens == 1) {
-                return userConverter.convertToUserDTO(userRepository.findUserById(authentication.get().getReference()).get());
-            }
+            authenticationRepository.deleteAuthenticationByToken(token);
+            return userConverter.convertToUserDTO(userRepository.findUserById(authentication.get().getReference()).get());
         }
         throw new SessionNotFoundException("User not logged!");
     }

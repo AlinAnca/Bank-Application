@@ -28,9 +28,11 @@ public class User {
     }
 
     public User(UserBuilder userBuilder) {
+        this.id = userBuilder.id;
         this.username = userBuilder.username;
         this.password = userBuilder.password;
         this.createdTime = userBuilder.createdTime;
+        this.updatedTime = userBuilder.updatedTime;
     }
 
     public static UserBuilder builder() {
@@ -104,12 +106,18 @@ public class User {
 
     public static class UserBuilder {
 
+        private Long id;
         private String username;
         private String password;
         private LocalDateTime createdTime;
         private LocalDateTime updatedTime;
         private List<Notification> notifications;
         private List<Account> accounts;
+
+        public UserBuilder withId(Long id) {
+            this.id = id;
+            return this;
+        }
 
         public UserBuilder withUsername(String username) {
             this.username = username;

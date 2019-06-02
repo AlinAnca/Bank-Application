@@ -1,18 +1,14 @@
 package com.bank.application.service.impl;
 
-import com.bank.application.exceptions.SessionNotFoundException;
-import com.bank.application.model.Account;
-import com.bank.application.model.Authentication;
+import com.bank.application.exceptions.*;
+import com.bank.application.model.*;
 import com.bank.application.model.DTO.TransferDTO;
 import com.bank.application.model.DTO.TransferRequestDTO;
 import com.bank.application.model.DTO.converter.TransferConverter;
-import com.bank.application.model.Transfer;
-import com.bank.application.model.User;
-import com.bank.application.repository.AccountRepository;
-import com.bank.application.repository.AuthenticationRepository;
-import com.bank.application.repository.TransferRepository;
-import com.bank.application.repository.UserRepository;
+import com.bank.application.repository.*;
 import com.bank.application.service.TransferService;
+import com.bank.application.util.Currency;
+import com.bank.application.util.Status;
 import com.bank.application.util.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,73 +23,117 @@ import java.util.Optional;
 @Transactional
 public class TransferServiceImpl implements TransferService {
 
-    @Autowired
-    AuthenticationRepository authenticationRepository;
+    private UserRepository userRepository;
+    private AuthenticationRepository authenticationRepository;
+    private AccountRepository accountRepository;
+    private TransferRepository transferRepository;
+    private TransferConverter transferConverter;
+    private NotificationRepository notificationRepository;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    AccountRepository accountRepository;
-
-    @Autowired
-    TransferRepository transferRepository;
-
-    @Autowired
-    TransferConverter transferConverter;
+    public TransferServiceImpl(UserRepository userRepository, AuthenticationRepository authenticationRepository,
+                               AccountRepository accountRepository, TransferRepository transferRepository,
+                               TransferConverter transferConverter, NotificationRepository notificationRepository) {
+        this.userRepository = userRepository;
+        this.authenticationRepository = authenticationRepository;
+        this.accountRepository = accountRepository;
+        this.transferRepository = transferRepository;
+        this.transferConverter = transferConverter;
+        this.notificationRepository = notificationRepository;
+    }
 
     @Override
-    public TransferDTO saveTransfer(String token, TransferRequestDTO transferRequestDTO) throws SessionNotFoundException {
+    public TransferDTO saveTransfer(String token, TransferRequestDTO transferRequestDTO) throws SessionNotFoundException, UserNotFoundException, UniqueAccountException, DuplicateAccountNumberException, InvalidCurrencyException, InvalidAmountException {
         Optional<Authentication> authentication = authenticationRepository.findAuthenticationByToken(token);
         if (authentication.isPresent()) {
             String accountNumberFrom = transferRequestDTO.getAccountNumber();
             Account accountFrom = accountRepository.findAccountByAccountNumber(transferRequestDTO.getAccountNumber()).get();
-
             String accountNumberTo = transferRequestDTO.getAccount().getAccountNumber();
             Account accountTo = accountRepository.findAccountByAccountNumber(accountNumberTo).get();
 
+            BigDecimal amount = transferRequestDTO.getAmount();
+            String details = transferRequestDTO.getDetails();
+
+            validateTransfer(accountFrom, accountTo, amount);
+
             Transfer incomingTransfer = Transfer.builder()
                     .withAccountNumber(accountNumberFrom)
-                    .withAmount(transferRequestDTO.getAmount())
+                    .withAmount(amount)
                     .withAccount(accountTo)
-                    .withDetails(transferRequestDTO.getDetails())
+                    .withDetails(details)
                     .withType(Type.INCOMING).build();
-
-            BigDecimal newBalanceFrom = accountFrom.getBalance().subtract(transferRequestDTO.getAmount());
-            accountRepository.updateAccountBalance(newBalanceFrom, accountNumberFrom);
 
             Transfer outgoingTransfer = Transfer.builder()
                     .withAccountNumber(accountNumberTo)
-                    .withAmount(transferRequestDTO.getAmount())
+                    .withAmount(amount)
                     .withAccount(accountFrom)
-                    .withDetails(transferRequestDTO.getDetails())
+                    .withDetails(details)
                     .withType(Type.OUTGOING).build();
 
-            BigDecimal newBalanceTo = accountTo.getBalance().add(transferRequestDTO.getAmount());
-            accountRepository.updateAccountBalance(newBalanceTo, accountNumberTo);
+            accountRepository.updateAccountFromBalance(amount, accountNumberFrom);
+            accountRepository.updateAccountToBalance(amount, accountNumberTo);
 
             transferRepository.save(incomingTransfer);
             transferRepository.save(outgoingTransfer);
+
+            createNotification(authentication.get(), details);
+
             return transferConverter.convertToTransferDTO(incomingTransfer);
+
         } else
             throw new SessionNotFoundException("User not logged. Please login and try again..");
+    }
+
+    private Notification createNotification(Authentication authentication, String details) throws UserNotFoundException {
+        Optional<User> user = userRepository.findUserById(authentication.getReference());
+        if (user.isPresent()) {
+            return notificationRepository.save(Notification.builder()
+                    .withUser(user.get())
+                    .withDetails(details)
+                    .withStatus(Status.NOT_SENT)
+                    .build());
+        } else
+            throw new UserNotFoundException("User could not be notify!");
+    }
+
+    private void validateTransfer(Account accountFrom, Account accountTo, BigDecimal amount) throws DuplicateAccountNumberException, InvalidCurrencyException, UniqueAccountException, InvalidAmountException {
+        checkAccountUniqueness(accountFrom);
+        if (accountFrom.getBalance().subtract(amount).doubleValue() < 0) {
+            throw new InvalidAmountException();
+        }
+        if (!accountFrom.getCurrency().equals(accountTo.getCurrency())) {
+            throw new InvalidCurrencyException("Different account types!");
+        }
+        if (accountFrom.getAccountNumber().equals(accountTo.getAccountNumber())) {
+            throw new DuplicateAccountNumberException("Duplicate accounts found!");
+        }
+    }
+
+    private void checkAccountUniqueness(Account account) throws UniqueAccountException {
+        if (Currency.EUR.equals(account.getCurrency()) && accountRepository.countAccountsByCurrencyEUR() == 1
+                || Currency.RON.equals(account.getCurrency()) && accountRepository.countAccountsByCurrencyRON() == 1) {
+            throw new UniqueAccountException("Only one account found of type " + account.getCurrency());
+        }
     }
 
     @Override
-    public List<TransferDTO> findAllTransfersByToken(String token) throws SessionNotFoundException {
+    public List<TransferDTO> findAllTransfersByToken(String token) throws SessionNotFoundException, UserNotFoundException {
         Optional<Authentication> authentication = authenticationRepository.findAuthenticationByToken(token);
         if (authentication.isPresent()) {
-            User user = userRepository.findUserById(authentication.get().getReference()).get();
-            List<Account> accounts = accountRepository.findAlLAccountsByUser(user);
-            List<Transfer> transfers = new ArrayList<>();
-            for (Account account : accounts) {
-                transfers.addAll(transferRepository.findTransfersByAccount(account));
-            }
-            return transferConverter.convertToListTransferDTO(transfers);
+            Long userId = authentication.get().getReference();
+            Optional<User> user = userRepository.findUserById(userId);
+            if (user.isPresent()) {
+                List<Account> accounts = accountRepository.findAlLAccountsByUser(user.get());
+                List<Transfer> transfers = new ArrayList<>();
+                for (Account account : accounts) {
+                    transfers.addAll(transferRepository.findTransfersByAccount(account));
+                }
+                return transferConverter.convertToListTransferDTO(transfers);
+            } else
+                throw new UserNotFoundException("User with id '" + userId + "' not found.");
+
         } else
             throw new SessionNotFoundException("User not logged. Please login and try again..");
 
     }
-
-
 }

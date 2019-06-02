@@ -3,6 +3,7 @@ package com.bank.application.model.DTO.converter;
 
 import com.bank.application.model.Account;
 import com.bank.application.model.DTO.AccountDTO;
+import com.bank.application.model.DTO.AccountRequestDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,6 +25,14 @@ public class AccountConverter {
                 .withBalance(account.getBalance())
                 .withCurrency(account.getCurrency())
                 .withCreatedTime(account.getCreatedTime())
+                .build();
+    }
+
+    public static AccountRequestDTO convertToAccountRequestDTO(Account account) {
+        return AccountRequestDTO.builder()
+                .withAccountNumber(account.getAccountNumber())
+                .withBalance(account.getBalance())
+                .withCurrency(account.getCurrency())
                 .build();
     }
 }

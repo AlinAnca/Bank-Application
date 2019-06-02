@@ -12,8 +12,43 @@ import javax.servlet.http.HttpServletRequest;
 @ControllerAdvice
 public class RestControllerAdvice {
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, UsernameNotFoundException unfe) {
+    @ExceptionHandler(AccountAlreadyExistsException.class)
+    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, AccountAlreadyExistsException ae) {
+        return new ResponseEntity<>(
+                new CustomException(ae.getMessage(), HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidAmountException.class)
+    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, InvalidAmountException iae) {
+        return new ResponseEntity<>(
+                new CustomException("Invalid amount", HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidCurrencyException.class)
+    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, InvalidCurrencyException ite) {
+        return new ResponseEntity<>(
+                new CustomException(ite.getMessage(), HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DuplicateAccountNumberException.class)
+    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, DuplicateAccountNumberException dane) {
+        return new ResponseEntity<>(
+                new CustomException(dane.getMessage(), HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UniqueAccountException.class)
+    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, UniqueAccountException ite) {
+        return new ResponseEntity<>(
+                new CustomException(ite.getMessage(), HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleAllExceptions(HttpServletRequest request, UserNotFoundException unfe) {
         return new ResponseEntity<>(
                 new CustomException(unfe.getMessage(), HttpStatus.NOT_FOUND),
                 HttpStatus.NOT_FOUND);
