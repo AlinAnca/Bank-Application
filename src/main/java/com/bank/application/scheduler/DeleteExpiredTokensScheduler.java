@@ -27,12 +27,6 @@ public class DeleteExpiredTokensScheduler {
     @Value("${jobs.cronSchedule.expire.time.in_minutes:30}")
     private long value;
 
-    @Value("${jobs.emailSchedule.email:}")
-    private String emailFrom;
-
-    @Value("${jobs.emailSchedule.password:}")
-    private String password;
-
     @Autowired
     public DeleteExpiredTokensScheduler(final AuthenticationRepository authenticationRepository) {
         this.authenticationRepository = authenticationRepository;
@@ -44,13 +38,12 @@ public class DeleteExpiredTokensScheduler {
         List<Authentication> authentications = authenticationRepository.findAll();
         for (Authentication auth : authentications) {
             long diff = ChronoUnit.MINUTES.between(auth.getCreatedTime(), now);
-            System.out.println("Difference in minutes: " + diff);
-            System.out.println("Expire time" + value);
+            LOGGER.info("Difference in minutes: " + diff);
+            LOGGER.info("Expire time" + value);
             if (diff >= value) {
                 authenticationRepository.deleteAuthenticationByToken(auth.getToken());
                 LOGGER.debug("Token expired!");
-                System.out.println("Token expired!");
-
+                LOGGER.info("Token expired!");
             }
         }
     }

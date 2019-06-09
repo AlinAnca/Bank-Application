@@ -4,11 +4,10 @@ import com.bank.application.util.Currency;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
-import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "account")
@@ -23,8 +22,6 @@ public class Account {
     private User user;
 
     @NotNull
-    @Size(min = 24, max = 24)
-    @Pattern(regexp = "^RO")
     @Column(name = "account_number", length = 24)
     private String accountNumber;
 
@@ -119,6 +116,25 @@ public class Account {
 
     public void setUpdatedTime(LocalDateTime updatedTime) {
         this.updatedTime = updatedTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account)) return false;
+        Account account = (Account) o;
+        return id == account.id &&
+                Objects.equals(user, account.user) &&
+                Objects.equals(accountNumber, account.accountNumber) &&
+                Objects.equals(balance, account.balance) &&
+                currency == account.currency &&
+                Objects.equals(createdTime, account.createdTime) &&
+                Objects.equals(updatedTime, account.updatedTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, user, accountNumber, balance, currency, createdTime, updatedTime);
     }
 
     public static class AccountBuilder {

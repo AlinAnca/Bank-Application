@@ -5,6 +5,7 @@ import com.bank.application.util.Currency;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class AccountDTO {
     private User user;
@@ -63,6 +64,23 @@ public class AccountDTO {
 
     public void setCreatedTime(LocalDateTime createdTime) {
         this.createdTime = createdTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AccountDTO)) return false;
+        AccountDTO that = (AccountDTO) o;
+        return Objects.equals(user, that.user) &&
+                Objects.equals(accountNumber, that.accountNumber) &&
+                Objects.equals(balance, that.balance) &&
+                currency == that.currency &&
+                Objects.equals(createdTime, that.createdTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, accountNumber, balance, currency, createdTime);
     }
 
     public static class AccountDTOBuilder {

@@ -3,6 +3,7 @@ package com.bank.application.model.DTO;
 import com.bank.application.util.Currency;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class AccountRequestDTO {
     private String accountNumber;
@@ -44,6 +45,21 @@ public class AccountRequestDTO {
 
     public void setCurrency(Currency currency) {
         this.currency = currency;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AccountRequestDTO)) return false;
+        AccountRequestDTO that = (AccountRequestDTO) o;
+        return Objects.equals(accountNumber, that.accountNumber) &&
+                Objects.equals(balance, that.balance) &&
+                currency == that.currency;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accountNumber, balance, currency);
     }
 
     public static class AccountRequestDTOBuilder {

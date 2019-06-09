@@ -5,7 +5,6 @@ import com.bank.application.util.Type;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -18,7 +17,6 @@ public class Transfer {
     private long id;
 
     @NotNull
-    @Size(min = 24, max = 24)
     @Column(name = "account", length = 24)
     private String accountNumber;
 

@@ -14,7 +14,7 @@ public interface AccountService {
 
     Account save(Account account);
 
-    List<AccountDTO> findAllAccountsByToken(String token);
+    List<AccountDTO> findAllAccountsByToken(String token) throws SessionNotFoundException;
 
     AccountDTO saveAccount(String token, AccountRequestDTO accountRequestDTO) throws SessionNotFoundException, UserNotFoundException, AccountAlreadyExistsException, InvalidCurrencyException;
 }

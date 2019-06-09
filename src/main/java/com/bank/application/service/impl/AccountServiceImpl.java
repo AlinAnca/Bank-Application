@@ -1,7 +1,6 @@
 package com.bank.application.service.impl;
 
 import com.bank.application.exceptions.AccountAlreadyExistsException;
-import com.bank.application.exceptions.InvalidCurrencyException;
 import com.bank.application.exceptions.SessionNotFoundException;
 import com.bank.application.exceptions.UserNotFoundException;
 import com.bank.application.model.Account;
@@ -44,12 +43,16 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<AccountDTO> findAllAccountsByToken(String token) {
-        return accountConverter.convertToListAccountDTO(accountRepository.findAllAccountsByToken(token));
+    public List<AccountDTO> findAllAccountsByToken(String token) throws SessionNotFoundException {
+        Optional<Authentication> authentication = authenticationRepository.findAuthenticationByToken(token);
+        if (authentication.isPresent()) {
+            return accountConverter.convertToListAccountDTO(accountRepository.findAllAccountsByToken(token));
+        } else
+            throw new SessionNotFoundException("User not logged. Please login and try again..");
     }
 
     @Override
-    public AccountDTO saveAccount(String token, AccountRequestDTO accountRequestDTO) throws SessionNotFoundException, UserNotFoundException, AccountAlreadyExistsException, InvalidCurrencyException {
+    public AccountDTO saveAccount(String token, AccountRequestDTO accountRequestDTO) throws SessionNotFoundException, UserNotFoundException, AccountAlreadyExistsException {
         Optional<Authentication> authentication = authenticationRepository.findAuthenticationByToken(token);
         if (authentication.isPresent()) {
             validateAccount(accountRequestDTO);
@@ -69,7 +72,7 @@ public class AccountServiceImpl implements AccountService {
             throw new SessionNotFoundException("User not logged. Please login and try again..");
     }
 
-    private void validateAccount(AccountRequestDTO accountRequestDTO) throws AccountAlreadyExistsException, InvalidCurrencyException {
+    private void validateAccount(AccountRequestDTO accountRequestDTO) throws AccountAlreadyExistsException {
         if (accountRepository.findAccountByAccountNumber(accountRequestDTO.getAccountNumber()).isPresent()) {
             throw new AccountAlreadyExistsException("Account already exists!");
         }

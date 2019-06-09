@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,12 +27,13 @@ import java.util.Optional;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = AccountService.class)
 public class AccountServiceTest {
 
@@ -71,17 +72,18 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void findAllAccountsByToken_Success() {
+    public void findAllAccountsByToken_Success() throws SessionNotFoundException {
         List<Account> accounts = new ArrayList<>();
         accounts.add(account);
-
+        when(authenticationRepository.findAuthenticationByToken(anyString())).thenReturn(Optional.of(authentication));
         when(accountRepository.findAllAccountsByToken(anyString())).thenReturn(accounts);
         List<AccountDTO> accountsDTO = accountService.findAllAccountsByToken("testToken");
         assertTrue(accountsDTO.size() == 1);
     }
 
     @Test
-    public void findAllAccountsByToken_NoAccounts_ReturnEmptyResult() {
+    public void findAllAccountsByToken_NoAccounts_ReturnEmptyResult() throws SessionNotFoundException {
+        when(authenticationRepository.findAuthenticationByToken(anyString())).thenReturn(Optional.of(authentication));
         List<Account> accounts = new ArrayList<>();
         when(accountRepository.findAllAccountsByToken(anyString())).thenReturn(accounts);
         List<AccountDTO> accountsDTO = accountService.findAllAccountsByToken("testToken");
@@ -98,23 +100,30 @@ public class AccountServiceTest {
         assertNotNull(accountDTO);
     }
 
-    @Test(expected = SessionNotFoundException.class)
+    @Test
     public void saveAccount_UserNotAuthenticated_throws_SessionNotFoundException() throws UserNotFoundException, SessionNotFoundException, AccountAlreadyExistsException, InvalidCurrencyException {
         when(authenticationRepository.findAuthenticationByToken(anyString())).thenReturn(Optional.empty());
-        accountService.saveAccount("testToken", AccountConverter.convertToAccountRequestDTO(account));
+        assertThrows(SessionNotFoundException.class, () -> {
+            accountService.saveAccount("testToken", AccountConverter.convertToAccountRequestDTO(account));
+        });
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test
     public void saveAccount_EmptyUser_throws_SessionNotFoundException() throws UserNotFoundException, SessionNotFoundException, AccountAlreadyExistsException, InvalidCurrencyException {
         when(authenticationRepository.findAuthenticationByToken(anyString())).thenReturn(Optional.of(authentication));
         when(userRepository.findUserById(any())).thenReturn(Optional.empty());
-        accountService.saveAccount("testToken", AccountConverter.convertToAccountRequestDTO(account));
+        assertThrows(UserNotFoundException.class, () -> {
+            accountService.saveAccount("testToken", AccountConverter.convertToAccountRequestDTO(account));
+        });
+
     }
 
-    @Test(expected = AccountAlreadyExistsException.class)
+    @Test
     public void saveExistentAccount_throws_AccountAlreadyExistsException() throws UserNotFoundException, SessionNotFoundException, AccountAlreadyExistsException, InvalidCurrencyException {
         when(authenticationRepository.findAuthenticationByToken(anyString())).thenReturn(Optional.of(authentication));
         when(accountRepository.findAccountByAccountNumber(anyString())).thenReturn(Optional.of(account));
-        accountService.saveAccount("testToken", AccountConverter.convertToAccountRequestDTO(account));
+        assertThrows(AccountAlreadyExistsException.class, () -> {
+            accountService.saveAccount("testToken", AccountConverter.convertToAccountRequestDTO(account));
+        });
     }
 }

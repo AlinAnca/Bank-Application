@@ -5,8 +5,6 @@ import com.bank.application.model.Notification;
 import com.bank.application.model.User;
 import com.bank.application.repository.NotificationRepository;
 import com.bank.application.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -30,10 +28,6 @@ import java.util.Properties;
 public class SendEmailScheduler {
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
-    private Logger LOGGER = LoggerFactory.getLogger(SendEmailScheduler.class);
-
-    @Value("${jobs.cronSchedule.expire.time.in_minutes:30}")
-    private long value;
 
     @Value("${jobs.emailSchedule.email:}")
     private String emailFrom;
@@ -48,7 +42,7 @@ public class SendEmailScheduler {
     }
 
     @Scheduled(cron = "${jobs.emailSchedule:}")
-    public void notifyUsers() throws MessagingException, UserNotFoundException {
+    public void notifyUsers() throws MessagingException {
         Properties props = new Properties();
         props.setProperty("mail.smtp.host", "smtp.mail.yahoo.com");
         props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
@@ -56,7 +50,7 @@ public class SendEmailScheduler {
         props.setProperty("mail.smtp.port", "465");
         props.setProperty("mail.smtp.socketFactory.port", "465");
         props.put("mail.smtp.auth", "true");
-        // props.put("mail.debug", "true");
+        props.put("mail.debug", "true");
         props.put("mail.store.protocol", "pop3");
         props.put("mail.transport.protocol", "smtp");
 

@@ -1,13 +1,22 @@
 package com.bank.application.model.DTO;
 
 import com.bank.application.model.Account;
+import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public class TransferRequestDTO {
+    @NotNull
+    @Length(min = 24, max = 24)
     private String accountNumber;
+
+    @NotNull
     private BigDecimal amount;
+
     private String details;
+
+    @NotNull
     private Account account;
 
     public TransferRequestDTO(TransferRequestDTOBuilder builder) {

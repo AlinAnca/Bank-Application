@@ -1,6 +1,7 @@
 package com.bank.application.controller;
 
 import com.bank.application.exceptions.*;
+import com.bank.application.model.DTO.UserDTO;
 import com.bank.application.model.DTO.UserLoginDTO;
 import com.bank.application.model.User;
 import com.bank.application.service.UserService;
@@ -19,28 +20,28 @@ public class UserController {
     UserService userService;
 
     @GetMapping("/{username}")
-    public ResponseEntity<?> findUserByUsername(@PathVariable("username") String username) {
-        return new ResponseEntity<>(userService.findUserByUsername(username), HttpStatus.OK);
+    public UserDTO findUserByUsername(@PathVariable("username") String username) {
+        return userService.findUserByUsername(username);
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> save(@Valid @RequestBody User user) throws UsernameAlreadyExistsException {
+    public ResponseEntity<UserDTO> save(@Valid @RequestBody User user) throws UsernameAlreadyExistsException {
         return new ResponseEntity<>(userService.save(user), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{username}")
-    public ResponseEntity<?> deleteUser(@PathVariable("username") String username) {
-        return new ResponseEntity<>(userService.deleteUser(username), HttpStatus.OK);
+    public UserDTO deleteUser(@PathVariable("username") String username) {
+        return userService.deleteUser(username);
     }
 
     @GetMapping(value = "/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginDTO userLoginDTO) throws InvalidPasswodException, UserNotFoundException, UserAlreadyLoggedException {
+    public ResponseEntity<UserDTO> login(@RequestBody UserLoginDTO userLoginDTO) throws InvalidPasswodException, UserNotFoundException, UserAlreadyLoggedException {
         return new ResponseEntity<>(userService.login(userLoginDTO), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping(value = "/logout")
-    public ResponseEntity<?> logout(@RequestParam String token) throws SessionNotFoundException {
-        return new ResponseEntity<>(userService.logout(token), HttpStatus.OK);
+    public UserDTO logout(@RequestParam String token) throws SessionNotFoundException {
+        return userService.logout(token);
     }
 
 }

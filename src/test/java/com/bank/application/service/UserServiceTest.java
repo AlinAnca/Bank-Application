@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -58,7 +59,7 @@ public class UserServiceTest {
         assertEquals("test", userDTO.getUsername());
     }
 
-    @Test(expected = InvalidPasswodException.class)
+    @Test
     public void login_InvalidPassword_Throws_InvalidPasswordException() throws UserNotFoundException, UserAlreadyLoggedException, InvalidPasswodException {
         User user2 = User.builder()
                 .withId(2L)
@@ -66,24 +67,30 @@ public class UserServiceTest {
                 .withPassword("pass2")
                 .build();
         when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.of(user2));
-        userService.login(userConverter.convertToUserLoginDTO(user));
+        assertThrows(InvalidPasswodException.class, () -> {
+            userService.login(userConverter.convertToUserLoginDTO(user));
+        });
     }
 
-    @Test(expected = UserAlreadyLoggedException.class)
+    @Test
     public void login_DuplicateAuthentication_Throws_UserAlreadyLoggedException() throws UserNotFoundException, UserAlreadyLoggedException, InvalidPasswodException {
         when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.of(user));
 
         Authentication authentication = Authentication.builder().withReference(user.getId()).build();
         when(authenticationRepository.findAuthenticationByReference(user.getId())).thenReturn(Optional.of(authentication));
 
-        userService.login(userConverter.convertToUserLoginDTO(user));
+        assertThrows(UserAlreadyLoggedException.class, () -> {
+            userService.login(userConverter.convertToUserLoginDTO(user));
+        });
     }
 
 
-    @Test(expected = UserNotFoundException.class)
+    @Test
     public void login_EmptyUsername_Throws_UserNotFoundException() throws UserNotFoundException, UserAlreadyLoggedException, InvalidPasswodException {
         when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.empty());
-        userService.login(userConverter.convertToUserLoginDTO(user));
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.login(userConverter.convertToUserLoginDTO(user));
+        });
     }
 
     @Test
@@ -98,9 +105,11 @@ public class UserServiceTest {
         assertNotNull(userDTO);
     }
 
-    @Test(expected = SessionNotFoundException.class)
+    @Test
     public void logout_NoAuthenticationFound_Fail() throws SessionNotFoundException {
         when(authenticationRepository.findAuthenticationByToken(anyString())).thenReturn(Optional.empty());
-        userService.logout("TestLogout");
+        assertThrows(SessionNotFoundException.class, () -> {
+            userService.logout("TestLogout");
+        });
     }
 }

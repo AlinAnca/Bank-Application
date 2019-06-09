@@ -2,13 +2,13 @@ package com.bank.application.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class CustomException {
+public class ErrorResponse {
 
     private String message;
 
     private HttpStatus status;
 
-    public CustomException(String message, HttpStatus status) {
+    public ErrorResponse(String message, HttpStatus status) {
         this.message = message;
         this.status = status;
     }
