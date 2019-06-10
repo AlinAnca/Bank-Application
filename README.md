@@ -19,9 +19,9 @@ https://www.mkyong.com/maven/how-to-install-maven-in-windows/
 ## Features
 
 The main functionalities:
-* LOGIN with an existing username and password from a resource file: "users.txt";
-* User can browse through his bank accounts by viewing details, adding an amount or a creating a new account;
-* All data regarding accounts are saved to a file from resources, "details.txt";
+* LOGIN with an existing username and password;
+* User can browse through his bank accounts by viewing details, creating a new account or making a transfer through his available accounts or to another account of the same type;
+* All data regarding accounts are saved into database;
 * Of course, the user can LOGOUT or EXIT the program whenever he wants.
 
 ## Credits
