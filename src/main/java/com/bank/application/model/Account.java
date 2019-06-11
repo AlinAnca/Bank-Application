@@ -3,9 +3,11 @@ package com.bank.application.model;
 import com.bank.application.util.Currency;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "account")
@@ -15,29 +17,27 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn
     private User user;
 
+    @NotNull
     @Column(name = "account_number", length = 24)
     private String accountNumber;
 
+    @PositiveOrZero
     @Column(name = "balance")
     private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "account_type", length = 5)
+    @Column(name = "account_type")
     private Currency currency;
 
-    @Transient
     @Column(name = "created_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime createdTime;
 
     @Column(name = "updated_time", nullable = false, columnDefinition = "datetime default current_timestamp")
     private LocalDateTime updatedTime;
-
-    @OneToMany(mappedBy = "account")
-    private List<Transaction> transactions;
 
     private Account() {
     }
@@ -48,11 +48,18 @@ public class Account {
         this.balance = accountBuilder.balance;
         this.currency = accountBuilder.currency;
         this.updatedTime = accountBuilder.updatedTime;
-        this.transactions = accountBuilder.transactions;
     }
 
     public static AccountBuilder builder() {
         return new AccountBuilder();
+    }
+
+    @PrePersist
+    void preInsert() {
+        if (this.createdTime == null)
+            this.createdTime = LocalDateTime.now();
+        if (this.updatedTime == null)
+            this.updatedTime = LocalDateTime.now();
     }
 
     public long getId() {
@@ -111,12 +118,23 @@ public class Account {
         this.updatedTime = updatedTime;
     }
 
-    public List<Transaction> getTransactions() {
-        return transactions;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account)) return false;
+        Account account = (Account) o;
+        return id == account.id &&
+                Objects.equals(user, account.user) &&
+                Objects.equals(accountNumber, account.accountNumber) &&
+                Objects.equals(balance, account.balance) &&
+                currency == account.currency &&
+                Objects.equals(createdTime, account.createdTime) &&
+                Objects.equals(updatedTime, account.updatedTime);
     }
 
-    public void setTransactions(List<Transaction> transactions) {
-        this.transactions = transactions;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, user, accountNumber, balance, currency, createdTime, updatedTime);
     }
 
     public static class AccountBuilder {
@@ -127,7 +145,6 @@ public class Account {
         private Currency currency;
         private LocalDateTime createdTime;
         private LocalDateTime updatedTime;
-        private List<Transaction> transactions;
 
         public AccountBuilder withUser(User user) {
             this.user = user;
@@ -156,11 +173,6 @@ public class Account {
 
         public AccountBuilder withUpdatedTime(LocalDateTime updatedTime) {
             this.updatedTime = updatedTime;
-            return this;
-        }
-
-        public AccountBuilder wihTransactions(List<Transaction> transactions) {
-            this.transactions = transactions;
             return this;
         }
 

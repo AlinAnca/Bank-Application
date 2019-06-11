@@ -1,30 +1,25 @@
 package com.bank.application.repository;
 
 import com.bank.application.model.Notification;
-import com.bank.application.util.SessionFactoryUtil;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
+import com.bank.application.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-import java.util.logging.Logger;
+import java.util.List;
 
-public class NotificationRepository {
-    private static final Logger LOGGER = Logger.getLogger(NotificationRepository.class.getName());
+@Repository
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    public static Long addNotification(Notification notification) {
-        Session session = SessionFactoryUtil.getSessionFactory().openSession();
-        org.hibernate.Transaction tx = null;
-        Long transactionID = null;
+    @Query(value = "select * from notification where status = 'NOT_SENT'", nativeQuery = true)
+    List<Notification> findNotificationsNotSent();
 
-        try {
-            tx = session.beginTransaction();
-            transactionID = (Long) session.save(notification);
-            tx.commit();
-        } catch (HibernateException e) {
-            if (tx != null) tx.rollback();
-            LOGGER.finest(e.getLocalizedMessage());
-        } finally {
-            session.close();
-        }
-        return transactionID;
-    }
+    Notification findNotificationByUser(User user);
+
+    Notification save(Notification notification);
+
+    @Modifying
+    @Query("update Notification set status = 'SENT', sentTime = current_timestamp where id = ?1")
+    Integer updateNotificationStatusById(Long id);
 }

@@ -24,7 +24,8 @@ public class Person {
     @Column(name = "last_name", nullable = false, length = 16)
     private String lastName;
 
-    private Person(){}
+    private Person() {
+    }
 
     public Person(User user, String email, String address, String firstName, String lastName) {
         this.user = user;
